@@ -15,7 +15,7 @@ const AdminClientTrack = () => {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const token = localStorage.getItem("token"); // ✅ Get token
+        const token = localStorage.getItem("token");
         if (!token) {
           toast.error("Unauthorized: Please login again");
           navigate("/login");
@@ -24,7 +24,7 @@ const AdminClientTrack = () => {
 
         const res = await axios.get(`${BASE}/all`, {
           headers: {
-            Authorization: `Bearer ${token}`, // ✅ Send token
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -83,97 +83,229 @@ const AdminClientTrack = () => {
   };
 
   if (loading)
-    return <div className="text-center py-10 text-gray-500">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading clients...</p>
+        </div>
+      </div>
+    );
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen overflow-x-auto">
-      <h1 className="text-3xl font-semibold mb-6 text-gray-800">
-        Client Tracking
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
+      {/* Header */}
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Client Tracking
+        </h1>
+        <p className="text-gray-600 mt-2 text-sm sm:text-base">
+          Manage and track all client interactions
+        </p>
+      </div>
 
-      <div className="overflow-x-auto shadow-xl rounded-xl bg-white border border-gray-200">
-        <table className="min-w-full text-sm text-gray-700 border-collapse">
-          <thead className="bg-gray-100 text-gray-800 text-sm uppercase font-semibold sticky top-0">
-            <tr>
-              <th className="p-4 text-left whitespace-nowrap">Date</th>
-              <th className="p-4 text-left whitespace-nowrap">Name</th>
-              <th className="p-4 text-left whitespace-nowrap">Email</th>
-              <th className="p-4 text-left whitespace-nowrap">Number</th>
-              <th className="p-4 text-left whitespace-nowrap">Course</th>
-              <th className="p-4 text-left whitespace-nowrap">Location</th>
-              <th className="p-4 text-left whitespace-nowrap">Status</th>
-              <th className="p-4 text-left whitespace-nowrap">Action</th>
-            </tr>
-          </thead>
+      {/* Mobile Card View */}
+      <div className="block lg:hidden space-y-4">
+        {clients.map((client) => (
+          <div
+            key={client._id}
+            className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+              <h3 className="text-white font-bold text-lg">{client.name}</h3>
+              <p className="text-blue-100 text-sm">
+                {client.createdAt
+                  ? new Date(client.createdAt).toLocaleDateString()
+                  : "—"}
+              </p>
+            </div>
 
-          <tbody>
-            {clients.map((client) => (
-              <tr
-                key={client._id}
-                className="border-b hover:bg-gray-50 transition duration-200"
-              >
-                <td className="p-4 whitespace-nowrap">
-                  {client.createdAt
-                    ? new Date(client.createdAt).toLocaleDateString()
-                    : "—"}
-                </td>
-                <td className="p-4 whitespace-nowrap">{client.name}</td>
-                <td className="p-4 whitespace-nowrap">{client.email}</td>
-                <td className="p-4 whitespace-nowrap">
-                  {client.whatsappNumber}
-                </td>
-                <td className="p-4 whitespace-nowrap">
-                  {client.q7_preferredDomain || "—"}
-                </td>
-                <td className="p-4 whitespace-nowrap">
-                  {client.city}, {client.state}
-                </td>
+            <div className="p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <p className="text-xs text-blue-600 font-semibold mb-1">Email</p>
+                  <p className="text-sm text-gray-900 font-medium truncate">
+                    {client.email}
+                  </p>
+                </div>
+                <div className="bg-green-50 rounded-lg p-3">
+                  <p className="text-xs text-green-600 font-semibold mb-1">Number</p>
+                  <p className="text-sm text-gray-900 font-medium">
+                    {client.whatsappNumber}
+                  </p>
+                </div>
+              </div>
 
-                <td className="p-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={client.connectionStatus || "Not Connected"}
-                      onChange={(e) =>
-                        handleStatusChange(client._id, e.target.value)
-                      }
-                      disabled={updatingId === client._id}
-                      className={`px-3 py-1 rounded-md border focus:outline-none transition ${
-                        client.connectionStatus === "Connected"
-                          ? "bg-green-50 border-green-300 text-green-700"
-                          : "bg-red-50 border-red-300 text-red-700"
-                      }`}
-                    >
-                      <option value="Connected">Connected</option>
-                      <option value="Not Connected">Not Connected</option>
-                    </select>
-                    {updatingId === client._id && (
-                      <span className="text-xs text-gray-500 animate-pulse">
-                        Saving...
-                      </span>
-                    )}
-                  </div>
-                </td>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-purple-50 rounded-lg p-3">
+                  <p className="text-xs text-purple-600 font-semibold mb-1">Course</p>
+                  <p className="text-sm text-gray-900 font-medium truncate">
+                    {client.q7_preferredDomain || "—"}
+                  </p>
+                </div>
+                <div className="bg-orange-50 rounded-lg p-3">
+                  <p className="text-xs text-orange-600 font-semibold mb-1">Location</p>
+                  <p className="text-sm text-gray-900 font-medium truncate">
+                    {client.city}, {client.state}
+                  </p>
+                </div>
+              </div>
 
-                <td className="p-4 whitespace-nowrap">
-                  <button
-                    onClick={() => handleView(client)}
-                    className="px-4 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-600 font-semibold mb-2">Connection Status</p>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={client.connectionStatus || "Not Connected"}
+                    onChange={(e) =>
+                      handleStatusChange(client._id, e.target.value)
+                    }
+                    disabled={updatingId === client._id}
+                    className={`flex-1 px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition text-sm font-semibold ${
+                      client.connectionStatus === "Connected"
+                        ? "bg-green-50 border-green-300 text-green-700 focus:ring-green-200"
+                        : "bg-red-50 border-red-300 text-red-700 focus:ring-red-200"
+                    }`}
                   >
-                    View
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    <option value="Connected">Connected</option>
+                    <option value="Not Connected">Not Connected</option>
+                  </select>
+                  {updatingId === client._id && (
+                    <span className="text-xs text-gray-500 animate-pulse">
+                      Saving...
+                    </span>
+                  )}
+                </div>
+              </div>
 
-            {clients.length === 0 && (
+              <button
+                onClick={() => handleView(client)}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {clients.length === 0 && (
+          <div className="text-center bg-white rounded-2xl shadow-xl p-8">
+            <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-4xl">📭</span>
+            </div>
+            <p className="text-gray-500 text-lg">No clients found</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <td colSpan="8" className="p-6 text-center text-gray-500">
-                  No clients found
-                </td>
+                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                  Date
+                </th>
+                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                  Name
+                </th>
+                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                  Email
+                </th>
+                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                  Number
+                </th>
+                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                  Course
+                </th>
+                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                  Location
+                </th>
+                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                  Status
+                </th>
+                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                  Action
+                </th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody className="divide-y divide-gray-200">
+              {clients.map((client) => (
+                <tr
+                  key={client._id}
+                  className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200"
+                >
+                  <td className="p-4 whitespace-nowrap text-gray-600">
+                    {client.createdAt
+                      ? new Date(client.createdAt).toLocaleDateString()
+                      : "—"}
+                  </td>
+                  <td className="p-4 whitespace-nowrap font-semibold text-gray-900">
+                    {client.name}
+                  </td>
+                  <td className="p-4 whitespace-nowrap text-gray-600">
+                    {client.email}
+                  </td>
+                  <td className="p-4 whitespace-nowrap text-gray-600">
+                    {client.whatsappNumber}
+                  </td>
+                  <td className="p-4 whitespace-nowrap text-gray-600">
+                    {client.q7_preferredDomain || "—"}
+                  </td>
+                  <td className="p-4 whitespace-nowrap text-gray-600">
+                    {client.city}, {client.state}
+                  </td>
+
+                  <td className="p-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={client.connectionStatus || "Not Connected"}
+                        onChange={(e) =>
+                          handleStatusChange(client._id, e.target.value)
+                        }
+                        disabled={updatingId === client._id}
+                        className={`px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition font-semibold text-sm ${
+                          client.connectionStatus === "Connected"
+                            ? "bg-green-50 border-green-300 text-green-700 focus:ring-green-200"
+                            : "bg-red-50 border-red-300 text-red-700 focus:ring-red-200"
+                        }`}
+                      >
+                        <option value="Connected">Connected</option>
+                        <option value="Not Connected">Not Connected</option>
+                      </select>
+                      {updatingId === client._id && (
+                        <span className="text-xs text-gray-500 animate-pulse">
+                          Saving...
+                        </span>
+                      )}
+                    </div>
+                  </td>
+
+                  <td className="p-4 whitespace-nowrap">
+                    <button
+                      onClick={() => handleView(client)}
+                      className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+              {clients.length === 0 && (
+                <tr>
+                  <td colSpan="8" className="p-12 text-center">
+                    <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <span className="text-4xl">📭</span>
+                    </div>
+                    <p className="text-gray-500 text-lg">No clients found</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

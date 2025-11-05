@@ -30,6 +30,8 @@ import LoginSignup from "./Components/Login-Signup";
 import PartnerDetails from "./pages/PartnerDetails";
 import AdminClientTrack from "./Components/AdminClientTrack";
 import ClientDetails from "./Components/ClientDetails";
+import AdminWallet from "./Components/AdminWallet";
+import PartnerWallet from "./Components/PartnerWallet";
 
 // ✅ Career Form Pages
 import ClientPage from "./Components/ClientPage";
@@ -37,11 +39,13 @@ import EditClientPage from "./Components/EditClientPage";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PartnerClientsTable from "./Components/PartnerClientsTable";
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* ✅ Authentication */}
         <Route path="/" element={<LoginSignup />} />
 
         {/* ✅ Admin routes */}
@@ -85,8 +89,6 @@ function App() {
             </Layout>
           }
         />
-
-        {/* ✅ FIX START — Add these routes */}
         <Route
           path="/admin/client-status"
           element={
@@ -96,14 +98,13 @@ function App() {
           }
         />
         <Route
-          path="/partner/client-status"
+          path="/admin/edit-client/:id"
           element={
             <Layout>
-              <ClientPage />
+              <EditClientPage />
             </Layout>
           }
         />
-        {/* ✅ FIX END */}
 
         {/* ✅ Partner routes */}
         <Route
@@ -122,32 +123,51 @@ function App() {
             </Layout>
           }
         />
-
-        {/* ✅ Common career form routes */}
         <Route
-          path="/client-status"
+          path="/partner/client-status"
           element={
             <Layout>
               <ClientPage />
             </Layout>
           }
         />
+
         <Route
-          path="/edit-client/:id"
+          path="/partner/client-track"
           element={
             <Layout>
-              <EditClientPage />
+              <PartnerClientsTable />
             </Layout>
           }
         />
 
-        {/* ✅ 404 */}
+        <Route
+          path="/admin/wallet"
+          element={
+            <Layout>
+              <AdminWallet />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/partner/wallet"
+          element={
+            <Layout>
+              <PartnerWallet />
+            </Layout>
+          }
+        />
+
+        {/* ✅ Fallback / 404 Page */}
         <Route
           path="*"
           element={
             <div className="flex flex-col items-center justify-center h-screen bg-gray-100 text-gray-700">
               <h1 className="text-5xl font-bold mb-3 text-indigo-600">404</h1>
-              <p className="text-lg">Oops! The page you are looking for doesn’t exist.</p>
+              <p className="text-lg">
+                Oops! The page you are looking for doesn’t exist.
+              </p>
               <a
                 href="/"
                 className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
@@ -160,7 +180,9 @@ function App() {
       </Routes>
 
       <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+      <footer/>
     </Router>
+    
   );
 }
 

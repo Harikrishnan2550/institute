@@ -56,6 +56,7 @@ import authRoutes from "./Routes/AuthRoutes.js";
 import dashboardRoutes from "./Routes/DashboardRoutes.js";
 import partnerRoutes from "./Routes/partnerRoutes.js";
 import clientStatusRoutes from "./Routes/clientStatusRoutes.js";
+import walletRoutes from "./Routes/walletRoutes.js";
 
 dotenv.config();
 
@@ -79,6 +80,7 @@ app.use("/api/user", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/partners", partnerRoutes);
 app.use("/api/client-status", clientStatusRoutes);
+app.use("/api/wallet", walletRoutes);
 
 // Root
 app.get("/", (req, res) => {

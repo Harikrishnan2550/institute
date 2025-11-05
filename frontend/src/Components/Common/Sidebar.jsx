@@ -29,61 +29,77 @@ const Sidebar = () => {
     <>
       {/* Mobile toggle button */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded-md"
+        className="md:hidden fixed top-4 left-4 z-50 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
         onClick={toggleSidebar}
+        aria-label="Toggle sidebar"
       >
-        {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+        {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
       </button>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity duration-300"
+          onClick={toggleSidebar}
+        />
+      )}
 
       {/* Sidebar container */}
       <aside
-        className={`fixed top-0 left-0 h-full bg-gray-900 text-gray-200 shadow-lg transform transition-transform duration-300 z-40
-        ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:w-64`}
+        className={`fixed top-0 left-0 h-full bg-gradient-to-b from-gray-900 via-gray-900 to-gray-800 text-gray-100 shadow-2xl transform transition-transform duration-300 z-40 w-72
+        ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:w-64 lg:w-72`}
       >
         {/* Logo + Role */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-700">
-          <img
-            src={
-              isAdmin
-                ? "/logos/admin-logo.png"
-                : "/logos/partner1.png" // can be dynamic from backend
-            }
-            alt="Logo"
-            className="w-10 h-10 rounded-full object-cover"
-          />
+        <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-700/50 bg-gray-800/30">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <span className="text-xl font-bold">
+              {isAdmin ? "A" : "P"}
+            </span>
+          </div>
           <div>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
               {isAdmin ? "Admin Panel" : "Partner Panel"}
             </h2>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 font-medium">
               {isAdmin ? "Full Access" : "Restricted Access"}
             </p>
           </div>
         </div>
 
         {/* Navigation links */}
-        <nav className="flex flex-col mt-6 space-y-1">
+        <nav className="flex flex-col mt-8 px-3 space-y-2">
           {menuItems.map((item) => (
             <NavLink
               key={item.title}
               to={`${baseRoute}/${item.path}`}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-6 py-3 text-sm font-medium transition-all duration-200 
-                hover:bg-gray-800 hover:text-white ${
-                  isActive ? "bg-gray-800 text-white border-l-4 border-indigo-500" : ""
+                `flex items-center gap-4 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-200 group relative overflow-hidden
+                ${
+                  isActive
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
+                    : "text-gray-300 hover:bg-gray-800/50 hover:text-white"
                 }`
               }
               onClick={() => setIsOpen(false)}
             >
-              <span className="text-lg">{item.icon}</span>
-              <span>{item.title}</span>
+              <span className={`text-xl transition-transform duration-200 ${
+                location.pathname === `${baseRoute}/${item.path}` ? "" : "group-hover:scale-110"
+              }`}>
+                {item.icon}
+              </span>
+              <span className="tracking-wide">{item.title}</span>
             </NavLink>
           ))}
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-4 left-0 w-full px-6 text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} MyCompany</p>
+        <div className="absolute bottom-6 left-0 w-full px-6">
+          <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700/50">
+            <p className="text-xs text-gray-400 font-medium">
+              &copy; {new Date().getFullYear()} Winshine
+            </p>
+            <p className="text-xs text-gray-500 mt-1">All rights reserved</p>
+          </div>
         </div>
       </aside>
     </>

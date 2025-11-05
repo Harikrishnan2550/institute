@@ -40,7 +40,7 @@ router.post("/submit", submitCareerForm);
 
 // Admin/Partner view forms
 router.get("/all", verifyToken, verifyRole("admin"), getAllForms);
-router.get("/agent/:agentId", verifyToken, verifyRole("partner"), getClientsByAgent);
+router.get("/agent/:agentId", verifyToken, verifyRole("admin","partner"), getClientsByAgent);
 
 // Admin/Partner get or modify
 router.get("/:id", verifyToken, verifyRole("admin", "partner"), getFormById);
