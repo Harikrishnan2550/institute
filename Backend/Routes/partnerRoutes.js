@@ -60,6 +60,37 @@ router.get("/public/logo/:agentId", async (req, res) => {
   }
 });
 
+// ✅ Get Partner by Agent ID (for frontend use)
+router.get("/agent/:agentId", async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    console.log("🧠 Fetching partner by agentId:", agentId);
+
+    const partner = await UserModel.findOne({ agentId }).select(
+      "-password -__v"
+    );
+
+    if (!partner) {
+      console.log("❌ Partner not found:", agentId);
+      return res.status(404).json({ message: "Partner not found" });
+    }
+
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const logoUrl = partner.logo
+      ? partner.logo.startsWith("http")
+        ? partner.logo
+        : `${baseUrl}${partner.logo.startsWith("/") ? partner.logo : "/" + partner.logo}`
+      : null;
+
+    res.status(200).json({
+      ...partner.toObject(),
+      logo: logoUrl,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching partner by agentId:", error.message);
+    res.status(500).json({ message: "Server error fetching partner" });
+  }
+});
 
 /* ---------------------------------------------------
    ✅ ADMIN ROUTES (Protected)
