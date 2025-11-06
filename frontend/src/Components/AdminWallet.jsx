@@ -902,7 +902,7 @@ function EditWalletModal({
             ×
           </button>
           <h2 className="text-xl font-bold text-white">Edit Wallet</h2>
-          <p className="text-blue-100 mt-1">{selectedWallet.partnerId?.name}</p>
+          <p className="text-gray-700 mt-1">{selectedWallet.partnerId?.name}</p>
         </div>
 
         <div className="p-6 space-y-6">
