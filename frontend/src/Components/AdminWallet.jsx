@@ -842,7 +842,7 @@ export default function AdminWallet() {
                     <td className="p-4 text-center">
                       <button
                         onClick={() => handleEdit(wallet)}
-                        className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+                        className="px-5 py-2 bg-green-400 hover:from-green-400 hover:to-green-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
                       >
                         Edit
                       </button>
