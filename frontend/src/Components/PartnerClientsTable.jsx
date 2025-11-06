@@ -416,7 +416,7 @@ export default function PartnerClientsTable({ agentId: propAgentId }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-green-600 bg-clip-text text-transparent">
           {propAgentId ? "Partner's Clients" : "My Clients"}
         </h1>
         <p className="text-gray-600 mt-2 text-sm sm:text-base">
@@ -474,7 +474,7 @@ export default function PartnerClientsTable({ agentId: propAgentId }) {
 
                 <button
                   onClick={() => setSelectedClient(client)}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105"
+                  className="w-full bg-green-600 hover:from-green-400 hover:to-green-600 text-white py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105"
                 >
                   View Details
                 </button>
@@ -540,7 +540,7 @@ export default function PartnerClientsTable({ agentId: propAgentId }) {
                     <td className="p-4 whitespace-nowrap">
                       <button
                         onClick={() => setSelectedClient(client)}
-                        className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+                        className="px-5 py-2 bg-green-600 hover:from-green-400 hover:to-green-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
                       >
                         View
                       </button>
@@ -567,7 +567,7 @@ export default function PartnerClientsTable({ agentId: propAgentId }) {
         <div className="fixed inset-0 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl relative overflow-hidden max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6 flex-shrink-0">
+            <div className="bg-green-600 p-4 sm:p-6 flex-shrink-0">
               <button
                 onClick={() => setSelectedClient(null)}
                 className="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 rounded-full w-8 h-8 flex items-center justify-center transition-all text-2xl"
@@ -595,7 +595,7 @@ export default function PartnerClientsTable({ agentId: propAgentId }) {
                       className="bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-gray-200 p-4 hover:border-blue-300 transition-all"
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        <span className="flex-shrink-0 w-7 h-7 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
                           {index + 1}
                         </span>
                         <p className="text-xs text-gray-500">
