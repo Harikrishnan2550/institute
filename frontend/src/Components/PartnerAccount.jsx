@@ -383,47 +383,53 @@ export default function PartnerAccount() {
   const [loading, setLoading] = useState(true);
 
   /* 🟢 Fetch Partner Data by Agent ID */
-  useEffect(() => {
-    const fetchPartner = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return toast.error("No token found. Please login again.");
+ useEffect(() => {
+  const fetchPartner = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return toast.error("No token found. Please login again.");
 
-        const decoded = JSON.parse(atob(token.split(".")[1]));
-        const agentId = decoded.agentId;
-        if (!agentId) return toast.error("Agent ID missing in token");
+      const decoded = JSON.parse(atob(token.split(".")[1]));
+      const agentId = decoded.agentId;
+      if (!agentId) return toast.error("Agent ID missing in token");
 
-        const res = await axiosInstance.get(`/api/partners/agent/${agentId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+      // ✅ Fetch full partner details (protected route)
+      const res = await axiosInstance.get(`/api/partners/agent/${agentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.data) {
+        setFormData({
+          name: res.data.name || "",
+          email: res.data.email || "",
+          mobile: res.data.mobile || "",
+          location: res.data.location || "",
+          accountNumber: res.data.accountNumber || "",
+          accountHolderName: res.data.accountHolderName || "",
+          ifscCode: res.data.ifscCode || "",
+          branch: res.data.branch || "",
         });
-
-        if (res.data) {
-          setFormData({
-            name: res.data.name || "",
-            email: res.data.email || "",
-            mobile: res.data.mobile || "",
-            location: res.data.location || "",
-            accountNumber: res.data.accountNumber || "",
-            accountHolderName: res.data.accountHolderName || "",
-            ifscCode: res.data.ifscCode || "",
-            branch: res.data.branch || "",
-          });
-
-          if (res.data.logo) {
-            const base = import.meta.env.VITE_API_BASE_URL;
-            setPreview(`${base}${res.data.logo}`);
-          }
-        }
-      } catch (error) {
-        console.error("❌ Error fetching partner:", error);
-        toast.error("Failed to fetch partner details");
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchPartner();
-  }, []);
+      // ✅ Fetch public logo (separate working endpoint)
+      const logoRes = await axiosInstance.get(
+        `/api/partners/public/logo/${agentId}`
+      );
+
+      if (logoRes.data?.logo) {
+        setPreview(logoRes.data.logo);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching partner:", error);
+      toast.error("Failed to fetch partner details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPartner();
+}, []);
+
 
   /* 🟢 Handle Input Changes */
   const handleChange = (e) => {
