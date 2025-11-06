@@ -137,6 +137,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://institute-client.vercel.app",
   "https://institute-admin-theta.vercel.app",
+  "https://institute-xp9z.vercel.app",
 ];
 
 // 2️⃣ Core CORS setup
