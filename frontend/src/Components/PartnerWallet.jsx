@@ -477,7 +477,7 @@ export default function PartnerWallet() {
 
       {/* Withdrawal Form */}
       <div className="bg-white shadow-xl rounded-2xl border border-gray-200 mb-6 sm:mb-10 overflow-hidden">
-        <div className="bg-green-500 p-6">
+        <div className="bg-green-400 p-6">
           <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
             <span>💳</span>
             Request Withdrawal
