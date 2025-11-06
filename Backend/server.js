@@ -122,44 +122,49 @@ import clientStatusRoutes from "./Routes/clientStatusRoutes.js";
 import walletRoutes from "./Routes/walletRoutes.js";
 
 dotenv.config();
-
 const app = express();
 const port = process.env.PORT || 4000;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* ----------------------------------------------------
-   ✅ CORS FIX for Render & Vercel
+   ✅ UNIVERSAL CORS FIX FOR RENDER + VERCEL
 ---------------------------------------------------- */
+
+// 1️⃣ Allowed frontend URLs
 const allowedOrigins = [
-  "http://localhost:5173", // local dev
-  "https://institute-client.vercel.app", // client frontend
-  "https://institute-admin-theta.vercel.app", // admin/partner frontend
+  "http://localhost:5173",
+  "https://institute-client.vercel.app",
+  "https://institute-admin-theta.vercel.app",
 ];
 
-// ✅ Allow CORS for both actual & preflight (OPTIONS) requests
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // Allow requests with no origin
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        console.log("❌ Blocked by CORS:", origin);
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// 2️⃣ Core CORS setup
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
-// ✅ Handle preflight requests
-app.options("*", cors());
+  // Preflight requests end here
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 
 /* ----------------------------------------------------
-   ✅ Express Middleware
+   ✅ Express Setup
 ---------------------------------------------------- */
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -168,10 +173,6 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 /* ----------------------------------------------------
    ✅ MongoDB Connection
 ---------------------------------------------------- */
-if (!process.env.MONGODB_URI) {
-  console.error("❌ Missing MONGODB_URI in .env file");
-  process.exit(1);
-}
 connectDB();
 
 /* ----------------------------------------------------
@@ -185,25 +186,19 @@ app.use("/api/client-status", clientStatusRoutes);
 app.use("/api/wallet", walletRoutes);
 
 /* ----------------------------------------------------
-   ✅ Root
+   ✅ Root + Error Handlers
 ---------------------------------------------------- */
 app.get("/", (req, res) => {
   res.send("🚀 API is running successfully on Render!");
 });
 
-/* ----------------------------------------------------
-   ✅ 404 & Error Handlers
----------------------------------------------------- */
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
 
 app.use((err, req, res, next) => {
   console.error("❌ Server Error:", err.message);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || "Internal Server Error",
-  });
+  res.status(500).json({ success: false, message: err.message });
 });
 
 /* ----------------------------------------------------
@@ -212,3 +207,4 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`✅ Server is running on port ${port}`);
 });
+
