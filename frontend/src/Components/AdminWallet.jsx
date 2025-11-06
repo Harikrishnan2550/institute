@@ -894,7 +894,7 @@ function EditWalletModal({
   return (
     <div className="fixed inset-0 backdrop-blur-md z-50 flex items-center justify-center p-6">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-y-auto max-h-[90vh] relative">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl p-6">
+        <div className="bg-green-600 rounded-t-2xl p-6">
           <button
             onClick={() => setSelectedWallet(null)}
             className="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 rounded-full w-8 h-8 flex items-center justify-center text-2xl"
@@ -938,7 +938,7 @@ function EditWalletModal({
 
           <button
             onClick={handleSave}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:scale-105 transition-all shadow-md"
+            className="w-full py-3 bg-green-600 text-white rounded-lg font-semibold hover:scale-105 transition-all shadow-md"
           >
             Save Changes
           </button>

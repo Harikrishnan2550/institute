@@ -78,7 +78,7 @@ export default function Dashboard({ role }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-4 bg-green-600 bg-clip-text text-transparent">
         {role === "admin" ? "Admin Overview" : "Partner Overview"}
       </h2>
 

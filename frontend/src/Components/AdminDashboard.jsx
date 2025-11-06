@@ -575,7 +575,7 @@ export default function AdminDashboard() {
         <>
           {/* Header */}
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-green-600 bg-clip-text text-transparent">
               Admin Dashboard
             </h1>
             <p className="text-gray-600 mt-2 text-sm sm:text-base">
@@ -590,7 +590,7 @@ export default function AdminDashboard() {
                 key={p._id}
                 className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
               >
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex items-center gap-3">
+                <div className="bg-green-600 p-4 flex items-center gap-3">
                   {p.logo ? (
                     <img
                       src={`${import.meta.env.VITE_API_BASE_URL}${
@@ -782,7 +782,7 @@ export default function AdminDashboard() {
           className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
         >
           {/* Partner Detail Page */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6">
+          <div className="bg-green-600 p-4 sm:p-6">
             <button
               onClick={() => setSelectedPartner(null)}
               className="flex items-center gap-2 mb-4 text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-xl transition-all font-semibold"
@@ -819,7 +819,7 @@ export default function AdminDashboard() {
             {/* Editable Fields */}
             <section className="mb-6 sm:mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
+                <div className="h-1 w-12 bg-green-600 rounded"></div>
                 <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                   Personal Details
                 </h3>
@@ -846,7 +846,7 @@ export default function AdminDashboard() {
             {/* Banking Details */}
             <section className="mb-6 sm:mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
+                <div className="h-1 w-12 bg-green-600 rounded"></div>
                 <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                   Banking Details
                 </h3>
@@ -876,7 +876,7 @@ export default function AdminDashboard() {
             <div className="flex justify-end">
               <button
                 onClick={handleSave}
-                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 sm:py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                className="w-full sm:w-auto bg-green-600 hover:from-green-400 hover:to-green-600 text-white px-8 py-3 sm:py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
               >
                 Save Changes
               </button>

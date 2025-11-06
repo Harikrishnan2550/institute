@@ -408,7 +408,7 @@ const AdminClientTrack = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-green-600 bg-clip-text text-transparent">
           Client Tracking
         </h1>
         <p className="text-gray-600 mt-2 text-sm sm:text-base">
@@ -423,7 +423,7 @@ const AdminClientTrack = () => {
             key={client._id}
             className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+            <div className="bg-green-600 p-4">
               <h3 className="text-white font-bold text-lg">{client.name}</h3>
               <p className="text-blue-100 text-sm">
                 {client.createdAt
@@ -491,7 +491,7 @@ const AdminClientTrack = () => {
 
               <button
                 onClick={() => handleView(client)}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105"
+                className="w-full bg-green-600 hover:from-green-400 hover:to-green-600 text-white py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105"
               >
                 View Details
               </button>
@@ -597,7 +597,7 @@ const AdminClientTrack = () => {
                   <td className="p-4 whitespace-nowrap">
                     <button
                       onClick={() => handleView(client)}
-                      className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+                      className="px-5 py-2 bg-green-600 hover:from-green-400 hover:to-green-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
                     >
                       View
                     </button>

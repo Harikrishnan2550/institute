@@ -362,7 +362,7 @@ const ClientDetails = () => {
           <span className="hidden sm:inline">Back</span>
         </button>
 
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-6 sm:p-8">
+        <div className="bg-green-600 rounded-2xl shadow-xl p-6 sm:p-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
             {client.name}
           </h1>
@@ -426,7 +426,7 @@ const ClientDetails = () => {
                 className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 sm:p-5 border border-gray-200 hover:border-blue-300 transition-all"
               >
                 <div className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
+                  <span className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-green-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
                     {index + 1}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -446,7 +446,7 @@ const ClientDetails = () => {
 
       {/* Admin Update Form */}
       <div className="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6">
+        <div className="bg-green-600 p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
             <span>⚙️</span>
             Admin Update
@@ -481,7 +481,7 @@ const ClientDetails = () => {
 
           <button
             onClick={handleUpdate}
-            className="mt-6 w-full sm:w-auto sm:min-w-[200px] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+            className="mt-6 w-full sm:w-auto sm:min-w-[200px] bg-gradient-to-r bg-green-600 hover:from-green-400 hover:to-green-600 text-white px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
           >
             Save Changes
           </button>
