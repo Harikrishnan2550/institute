@@ -222,7 +222,7 @@ export default function PartnerDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-green-600 bg-clip-text text-transparent">
           Welcome, Partner!
         </h1>
         <p className="text-gray-600 mt-2 text-sm sm:text-base">
@@ -271,7 +271,7 @@ export default function PartnerDashboard() {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => navigate("/partner/wallet")}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+            className="px-6 py-3 bg-green-600 hover:from-green-400 hover:to-green-600 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
             View Wallet
           </button>
