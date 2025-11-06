@@ -1,3 +1,8 @@
+
+
+
+
+
 // import React, { useState } from "react";
 // import axios from "axios";
 // import { useNavigate } from "react-router-dom";
@@ -8,9 +13,6 @@
 //   const [error, setError] = useState("");
 //   const [isLoading, setIsLoading] = useState(false);
 //   const navigate = useNavigate();
-
-//   // ✅ Predefined Admin Email
-//   const ADMIN_EMAIL = "admin@institute.com";
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
@@ -23,40 +25,51 @@
 //   };
 
 //   const handleSubmit = async (e) => {
-//   e.preventDefault();
-//   setIsLoading(true);
-//   setError("");
+//     e.preventDefault();
+//     setIsLoading(true);
+//     setError("");
 
-//   const endpoint = isLogin
-//     ? "http://localhost:4000/api/user/login"
-//     : "http://localhost:4000/api/user/register";
+//     const endpoint = isLogin
+//       ? "http://localhost:4000/api/user/login"
+//       : "http://localhost:4000/api/user/register";
 
-//   const { name, email, password } = formData;
-//   const payload = isLogin ? { email, password } : { name, email, password };
+//     const { name, email, password } = formData;
+//     const payload = isLogin ? { email, password } : { name, email, password };
 
-//   try {
-//     const response = await axios.post(endpoint, payload);
+//     try {
+//       const response = await axios.post(endpoint, payload);
 
-//     // ✅ Save token + role
-//     localStorage.setItem("token", response.data.token);
-//     localStorage.setItem("role", response.data.user?.role || response.data.role);
+//       // ✅ Extract user info safely
+//       const token = response.data.token;
+//       const role = response.data.user?.role || response.data.role;
+//       const agentId = response.data.user?.agentId;
 
-//     // ✅ Redirect based on role
-//     const role = response.data.user?.role || response.data.role;
-//     if (role === "admin") {
-//       navigate("/admin/dashboard");
-//     } else {
-//       navigate("/partner/dashboard");
+//       if (!token) {
+//         throw new Error("Token not received from server");
+//       }
+
+//       // ✅ Store login data in localStorage
+//       localStorage.setItem("token", token);
+//       localStorage.setItem("role", role);
+
+//       // ✅ For partners only, store their agentId
+//       if (role === "partner" && agentId) {
+//         localStorage.setItem("agentId", agentId);
+//       }
+
+//       // ✅ Redirect based on role
+//       if (role === "admin") {
+//         navigate("/admin/dashboard");
+//       } else {
+//         navigate("/partner/dashboard");
+//       }
+//     } catch (err) {
+//       console.error("Login/Signup Error:", err.response?.data || err.message);
+//       setError(err.response?.data?.message || "Something went wrong. Please try again.");
+//     } finally {
+//       setIsLoading(false);
 //     }
-//   } catch (err) {
-//     console.error("Login/Signup Error:", err.response?.data || err.message);
-//     setError(err.response?.data?.message || "Something went wrong. Please try again.");
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
-
-
+//   };
 
 //   return (
 //     <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-indigo-100 to-blue-200 px-4">
@@ -139,9 +152,13 @@
 
 
 
+
+
+
+// src/Components/LoginSignup.jsx
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axios"; // ✅ centralized axios instance
 
 const LoginSignup = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -150,32 +167,32 @@ const LoginSignup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // 🧩 Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // 🔄 Toggle between login and signup
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setError("");
   };
 
+  // 🟢 Handle login/signup
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    const endpoint = isLogin
-      ? "http://localhost:4000/api/user/login"
-      : "http://localhost:4000/api/user/register";
-
+    const endpoint = isLogin ? "/api/user/login" : "/api/user/register";
     const { name, email, password } = formData;
     const payload = isLogin ? { email, password } : { name, email, password };
 
     try {
-      const response = await axios.post(endpoint, payload);
+      const response = await axiosInstance.post(endpoint, payload);
 
-      // ✅ Extract user info safely
+      // ✅ Extract user info
       const token = response.data.token;
       const role = response.data.user?.role || response.data.role;
       const agentId = response.data.user?.agentId;
@@ -184,11 +201,10 @@ const LoginSignup = () => {
         throw new Error("Token not received from server");
       }
 
-      // ✅ Store login data in localStorage
+      // ✅ Save to localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
 
-      // ✅ For partners only, store their agentId
       if (role === "partner" && agentId) {
         localStorage.setItem("agentId", agentId);
       }
@@ -200,7 +216,7 @@ const LoginSignup = () => {
         navigate("/partner/dashboard");
       }
     } catch (err) {
-      console.error("Login/Signup Error:", err.response?.data || err.message);
+      console.error("❌ Login/Signup Error:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
@@ -214,6 +230,7 @@ const LoginSignup = () => {
           {isLogin ? "Welcome Back 👋" : "Create an Account"}
         </h2>
 
+        {/* 🧾 Login / Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {!isLogin && (
             <div>
@@ -256,13 +273,17 @@ const LoginSignup = () => {
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-sm text-center">{error}</p>
+          )}
 
           <button
             type="submit"
             disabled={isLoading}
             className={`w-full py-3 font-semibold rounded-lg text-white transition-all ${
-              isLoading ? "bg-indigo-300" : "bg-indigo-600 hover:bg-indigo-700"
+              isLoading
+                ? "bg-indigo-300 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
             }`}
           >
             {isLoading ? "Please wait..." : isLogin ? "Login" : "Sign Up"}
