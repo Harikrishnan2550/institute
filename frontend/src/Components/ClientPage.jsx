@@ -642,7 +642,7 @@
 
 
 import React, { useState, useEffect } from "react";
-import axiosInstance from "../api/axios"; // ✅ centralized axios
+import axiosInstance from "../api/axios";
 import {
   Box,
   Table,
@@ -695,7 +695,6 @@ const ClientStatusTable = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  // 🟢 Fetch Clients
   const fetchClients = async () => {
     try {
       setLoading(true);
@@ -726,7 +725,6 @@ const ClientStatusTable = () => {
     }
   };
 
-  // 🧩 Decode Token
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -750,7 +748,6 @@ const ClientStatusTable = () => {
     }
   }, [userRole, userId]);
 
-  // 🟢 Status Chips
   const getStatusChip = (status, type) => {
     const colorMap = {
       pending: "warning",
@@ -782,7 +779,6 @@ const ClientStatusTable = () => {
     );
   };
 
-  // 🟢 Edit & Update
   const handleEdit = (client) => {
     setSelectedClient({ ...client });
     setOpenDialog(true);
@@ -825,7 +821,6 @@ const ClientStatusTable = () => {
   );
   const totalPages = Math.ceil(clients.length / rowsPerPage);
 
-  // 🟢 Loader
   if (loading) {
     return (
       <Box
@@ -835,6 +830,7 @@ const ClientStatusTable = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          p: 2,
         }}
       >
         <Box textAlign="center">
@@ -852,16 +848,16 @@ const ClientStatusTable = () => {
       sx={{
         minHeight: "100vh",
         background: "linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)",
-        p: { xs: 2, sm: 3, md: 4 },
+        p: { xs: 1.5, sm: 2, md: 3, lg: 4 },
       }}
     >
       {/* Header */}
       <Box
         sx={{
-          mb: { xs: 3, md: 4 },
+          mb: { xs: 2, sm: 3, md: 4 },
           background: "linear-gradient(135deg, #1e88e5 0%, #9c27b0 100%)",
-          borderRadius: 3,
-          p: { xs: 3, md: 4 },
+          borderRadius: { xs: 2, md: 3 },
+          p: { xs: 2, sm: 2.5, md: 3, lg: 4 },
           boxShadow: 3,
         }}
       >
@@ -870,20 +866,24 @@ const ClientStatusTable = () => {
           flexDirection={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
           alignItems={{ xs: "flex-start", sm: "center" }}
-          gap={2}
+          gap={{ xs: 1.5, sm: 2 }}
         >
           <Box>
             <Typography
               variant="h4"
               fontWeight="bold"
               color="white"
-              sx={{ fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" } }}
+              sx={{ fontSize: { xs: "1.25rem", sm: "1.75rem", md: "2.125rem" } }}
             >
               {userRole === "admin" ? "All Clients" : "My Clients"}
             </Typography>
             <Typography
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.8)", mt: 0.5 }}
+              sx={{ 
+                color: "rgba(255,255,255,0.8)", 
+                mt: 0.5,
+                fontSize: { xs: "0.75rem", sm: "0.875rem" }
+              }}
             >
               Manage client statuses and information
             </Typography>
@@ -892,11 +892,13 @@ const ClientStatusTable = () => {
             startIcon={<Refresh />}
             onClick={fetchClients}
             variant="contained"
-            size="medium"
+            size={isMobile ? "small" : "medium"}
             sx={{
               bgcolor: "white",
               color: "primary.main",
               fontWeight: "bold",
+              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+              px: { xs: 2, sm: 3 },
               "&:hover": { bgcolor: "grey.100" },
             }}
           >
@@ -905,17 +907,17 @@ const ClientStatusTable = () => {
         </Box>
       </Box>
 
-      {/* 🟢 Mobile Card View */}
+      {/* Mobile Card View */}
       {isMobile ? (
         <Box>
           {paginatedClients.length > 0 ? (
-            <Grid container spacing={2}>
+            <Grid container spacing={{ xs: 1.5, sm: 2 }}>
               {paginatedClients.map((client, index) => (
                 <Grid item xs={12} key={client._id}>
                   <Card
                     elevation={3}
                     sx={{
-                      borderRadius: 3,
+                      borderRadius: { xs: 2, sm: 3 },
                       overflow: "hidden",
                       transition: "all 0.3s",
                       "&:hover": {
@@ -928,54 +930,78 @@ const ClientStatusTable = () => {
                       sx={{
                         background:
                           "linear-gradient(135deg, #1e88e5 0%, #9c27b0 100%)",
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                       }}
                     >
-                      <Typography variant="h6" color="white" fontWeight="bold">
+                      <Typography 
+                        variant="h6" 
+                        color="white" 
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
+                      >
                         {client.name || "N/A"}
                       </Typography>
                       <Typography
                         variant="caption"
-                        sx={{ color: "rgba(255,255,255,0.8)" }}
+                        sx={{ 
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: { xs: "0.7rem", sm: "0.75rem" }
+                        }}
                       >
                         #{(page - 1) * rowsPerPage + index + 1}
                       </Typography>
                     </Box>
-                    <CardContent>
+                    <CardContent sx={{ p: { xs: 1.5, sm: 2 }, "&:last-child": { pb: { xs: 1.5, sm: 2 } } }}>
                       <Box
                         sx={{
                           display: "flex",
                           flexDirection: "column",
-                          gap: 2,
+                          gap: { xs: 1.5, sm: 2 },
                         }}
                       >
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          fontWeight="bold"
-                        >
-                          Course
-                        </Typography>
-                        <Typography variant="body2">
-                          {client.q7_preferredDomain || "N/A"}
-                        </Typography>
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            fontWeight="bold"
+                            sx={{ fontSize: { xs: "0.7rem", sm: "0.75rem" } }}
+                          >
+                            Course
+                          </Typography>
+                          <Typography 
+                            variant="body2"
+                            sx={{ fontSize: { xs: "0.85rem", sm: "0.875rem" }, mt: 0.5 }}
+                          >
+                            {client.q7_preferredDomain || "N/A"}
+                          </Typography>
+                        </Box>
                         <Divider />
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                          <Box sx={{ flex: "1 1 45%" }}>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: { xs: 1.5, sm: 2 } }}>
+                          <Box sx={{ flex: "1 1 45%", minWidth: "120px" }}>
                             <Typography
                               variant="caption"
                               color="text.secondary"
                               fontWeight="bold"
+                              sx={{ 
+                                fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                                display: "block",
+                                mb: 0.5
+                              }}
                             >
                               Mode of Class
                             </Typography>
                             {getStatusChip(client.modeOfClass, "mode")}
                           </Box>
-                          <Box sx={{ flex: "1 1 45%" }}>
+                          <Box sx={{ flex: "1 1 45%", minWidth: "120px" }}>
                             <Typography
                               variant="caption"
                               color="text.secondary"
                               fontWeight="bold"
+                              sx={{ 
+                                fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                                display: "block",
+                                mb: 0.5
+                              }}
                             >
                               Payment
                             </Typography>
@@ -983,31 +1009,46 @@ const ClientStatusTable = () => {
                           </Box>
                         </Box>
                         <Divider />
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          fontWeight="bold"
-                        >
-                          Registration
-                        </Typography>
-                        {getStatusChip(client.registrationStatus, "registration")}
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            fontWeight="bold"
+                            sx={{ 
+                              fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                              display: "block",
+                              mb: 0.5
+                            }}
+                          >
+                            Registration
+                          </Typography>
+                          {getStatusChip(client.registrationStatus, "registration")}
+                        </Box>
                         <Divider />
-                        <Box display="flex" gap={1} justifyContent="flex-end">
+                        <Box display="flex" gap={1} justifyContent="flex-end" flexWrap="wrap">
                           <Button
-                            startIcon={<Visibility />}
+                            startIcon={<Visibility fontSize="small" />}
                             variant="outlined"
                             size="small"
-                            sx={{ borderRadius: 2 }}
+                            sx={{ 
+                              borderRadius: 2,
+                              fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                              px: { xs: 1.5, sm: 2 }
+                            }}
                           >
                             View
                           </Button>
                           {userRole === "admin" && (
                             <Button
-                              startIcon={<Edit />}
+                              startIcon={<Edit fontSize="small" />}
                               variant="contained"
                               size="small"
                               onClick={() => handleEdit(client)}
-                              sx={{ borderRadius: 2 }}
+                              sx={{ 
+                                borderRadius: 2,
+                                fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                                px: { xs: 1.5, sm: 2 }
+                              }}
                             >
                               Edit
                             </Button>
@@ -1020,8 +1061,12 @@ const ClientStatusTable = () => {
               ))}
             </Grid>
           ) : (
-            <Card sx={{ borderRadius: 3, p: 4, textAlign: "center" }}>
-              <Typography variant="h6" color="text.secondary">
+            <Card sx={{ borderRadius: { xs: 2, md: 3 }, p: { xs: 3, sm: 4 }, textAlign: "center" }}>
+              <Typography 
+                variant="h6" 
+                color="text.secondary"
+                sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
+              >
                 📭 No clients found
               </Typography>
             </Card>
@@ -1029,12 +1074,27 @@ const ClientStatusTable = () => {
         </Box>
       ) : (
         /* Desktop Table View */
-        <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 3 }}>
-          <Table>
+        <TableContainer 
+          component={Paper} 
+          elevation={3} 
+          sx={{ 
+            borderRadius: 3,
+            overflowX: "auto"
+          }}
+        >
+          <Table sx={{ minWidth: 650 }}>
             <TableHead sx={{ background: "#f5f5f5" }}>
               <TableRow>
                 {["#", "Name", "Course", "Mode", "Payment", "Registration", "Actions"].map((h) => (
-                  <TableCell key={h} sx={{ fontWeight: "bold", color: "text.primary" }}>
+                  <TableCell 
+                    key={h} 
+                    sx={{ 
+                      fontWeight: "bold", 
+                      color: "text.primary",
+                      fontSize: { md: "0.875rem", lg: "1rem" },
+                      whiteSpace: "nowrap"
+                    }}
+                  >
                     {h}
                   </TableCell>
                 ))}
@@ -1044,9 +1104,15 @@ const ClientStatusTable = () => {
               {paginatedClients.length > 0 ? (
                 paginatedClients.map((client, index) => (
                   <TableRow key={client._id} hover>
-                    <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
-                    <TableCell>{client.name || "N/A"}</TableCell>
-                    <TableCell>{client.q7_preferredDomain || "N/A"}</TableCell>
+                    <TableCell sx={{ fontSize: { md: "0.875rem", lg: "1rem" } }}>
+                      {(page - 1) * rowsPerPage + index + 1}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: { md: "0.875rem", lg: "1rem" } }}>
+                      {client.name || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: { md: "0.875rem", lg: "1rem" } }}>
+                      {client.q7_preferredDomain || "N/A"}
+                    </TableCell>
                     <TableCell>{getStatusChip(client.modeOfClass, "mode")}</TableCell>
                     <TableCell>{getStatusChip(client.paymentStatus, "payment")}</TableCell>
                     <TableCell>
@@ -1056,7 +1122,7 @@ const ClientStatusTable = () => {
                       <Box display="flex" gap={1}>
                         <Tooltip title="View">
                           <IconButton color="info" size="small">
-                            <Visibility />
+                            <Visibility fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         {userRole === "admin" && (
@@ -1066,7 +1132,7 @@ const ClientStatusTable = () => {
                               size="small"
                               onClick={() => handleEdit(client)}
                             >
-                              <Edit />
+                              <Edit fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         )}
@@ -1077,7 +1143,7 @@ const ClientStatusTable = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
-                    <Typography>📭 No clients found</Typography>
+                    <Typography sx={{ py: 2 }}>📭 No clients found</Typography>
                   </TableCell>
                 </TableRow>
               )}
@@ -1087,28 +1153,47 @@ const ClientStatusTable = () => {
       )}
 
       {/* Pagination */}
-      <Box display="flex" justifyContent="center" mt={3}>
+      <Box display="flex" justifyContent="center" mt={{ xs: 2, sm: 3 }}>
         <Pagination
           count={totalPages}
           page={page}
           onChange={handlePageChange}
           color="primary"
           shape="rounded"
+          size={isMobile ? "small" : "medium"}
+          sx={{
+            "& .MuiPaginationItem-root": {
+              fontSize: { xs: "0.75rem", sm: "0.875rem" }
+            }
+          }}
         />
       </Box>
 
       {/* Edit Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
+      <Dialog 
+        open={openDialog} 
+        onClose={() => setOpenDialog(false)} 
+        fullWidth 
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            m: { xs: 2, sm: 3 },
+            maxHeight: { xs: "calc(100% - 32px)", sm: "calc(100% - 64px)" }
+          }
+        }}
+      >
         <DialogTitle
           sx={{
             background: "linear-gradient(135deg, #1e88e5 0%, #9c27b0 100%)",
             color: "white",
             fontWeight: "bold",
+            fontSize: { xs: "1.1rem", sm: "1.25rem" },
+            p: { xs: 2, sm: 2.5 }
           }}
         >
           Edit Client Status
         </DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: { xs: 1.5, sm: 2 }, mt: 2, p: { xs: 2, sm: 3 } }}>
           {[
             ["Mode of Class", "modeOfClass", ["online", "offline"]],
             ["Payment Status", "paymentStatus", ["pending", "completed"]],
@@ -1123,6 +1208,12 @@ const ClientStatusTable = () => {
                 setSelectedClient({ ...selectedClient, [key]: e.target.value })
               }
               fullWidth
+              size={isMobile ? "small" : "medium"}
+              sx={{
+                "& .MuiInputBase-root": {
+                  fontSize: { xs: "0.875rem", sm: "1rem" }
+                }
+              }}
             >
               <MenuItem value="">Select</MenuItem>
               {options.map((opt) => (
@@ -1133,14 +1224,22 @@ const ClientStatusTable = () => {
             </TextField>
           ))}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+        <DialogActions sx={{ p: { xs: 2, sm: 2.5 }, gap: 1 }}>
+          <Button 
+            onClick={() => setOpenDialog(false)}
+            size={isMobile ? "small" : "medium"}
+            sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+          >
+            Cancel
+          </Button>
           <Button
             variant="contained"
             onClick={handleUpdate}
+            size={isMobile ? "small" : "medium"}
             sx={{
               background: "linear-gradient(135deg, #1e88e5 0%, #9c27b0 100%)",
               color: "white",
+              fontSize: { xs: "0.8rem", sm: "0.875rem" }
             }}
           >
             Update
@@ -1153,8 +1252,17 @@ const ClientStatusTable = () => {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+        <Alert 
+          severity={snackbar.severity}
+          sx={{ 
+            width: "100%",
+            fontSize: { xs: "0.8rem", sm: "0.875rem" }
+          }}
+        >
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </Box>
   );
