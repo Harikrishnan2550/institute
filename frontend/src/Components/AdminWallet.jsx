@@ -592,7 +592,7 @@
 
 
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../api/axios"; // ✅ centralized axios
+import axiosInstance from "../api/axios";
 import { toast } from "react-toastify";
 
 export default function AdminWallet() {
@@ -785,25 +785,25 @@ export default function AdminWallet() {
           <table className="min-w-full">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                <th className="p-4 text-left text-sm font-bold text-gray-700">
                   Partner Name
                 </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                <th className="p-4 text-left text-sm font-bold text-gray-700">
                   Agent ID
                 </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                <th className="p-4 text-left text-sm font-bold text-gray-700">
                   Total Revenue
                 </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                <th className="p-4 text-left text-sm font-bold text-gray-700">
                   Available Balance
                 </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                <th className="p-4 text-left text-sm font-bold text-gray-700">
                   Pending Withdrawal
                 </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
+                <th className="p-4 text-left text-sm font-bold text-gray-700">
                   Total Withdrawn
                 </th>
-                <th className="p-4 text-center text-sm font-bold text-gray-700 whitespace-nowrap">
+                <th className="p-4 text-center text-sm font-bold text-gray-700">
                   Actions
                 </th>
               </tr>
@@ -821,25 +821,25 @@ export default function AdminWallet() {
                     key={wallet._id}
                     className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200"
                   >
-                    <td className="p-4 whitespace-nowrap font-semibold text-gray-900">
+                    <td className="p-4 font-semibold text-gray-900">
                       {wallet.partnerId?.name || "—"}
                     </td>
-                    <td className="p-4 whitespace-nowrap text-gray-600">
+                    <td className="p-4 text-gray-600">
                       {wallet.partnerId?.agentId || "—"}
                     </td>
-                    <td className="p-4 whitespace-nowrap font-semibold text-blue-600">
+                    <td className="p-4 font-semibold text-blue-600">
                       ₹{wallet.totalRevenue?.toLocaleString()}
                     </td>
-                    <td className="p-4 whitespace-nowrap font-semibold text-green-600">
+                    <td className="p-4 font-semibold text-green-600">
                       ₹{wallet.availableBalance?.toLocaleString()}
                     </td>
-                    <td className="p-4 whitespace-nowrap font-semibold text-yellow-600">
+                    <td className="p-4 font-semibold text-yellow-600">
                       ₹{totalPending.toLocaleString()}
                     </td>
-                    <td className="p-4 whitespace-nowrap font-semibold text-purple-600">
+                    <td className="p-4 font-semibold text-purple-600">
                       ₹{wallet.totalWithdrawn?.toLocaleString()}
                     </td>
-                    <td className="p-4 text-center whitespace-nowrap">
+                    <td className="p-4 text-center">
                       <button
                         onClick={() => handleEdit(wallet)}
                         className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
@@ -855,8 +855,186 @@ export default function AdminWallet() {
         </div>
       </div>
 
-      {/* Edit Modal + Withdrawal Logic remain unchanged */}
-      {/* ✅ All axios calls now use axiosInstance (with env baseURL) */}
+      {/* 🟢 Edit Modal */}
+      {selectedWallet && (
+        <EditWalletModal
+          selectedWallet={selectedWallet}
+          editData={editData}
+          setEditData={setEditData}
+          setSelectedWallet={setSelectedWallet}
+          handleSave={handleSave}
+          handleWithdrawalAction={handleWithdrawalAction}
+          setRejectionModal={setRejectionModal}
+        />
+      )}
+
+      {/* 🟠 Rejection Modal */}
+      {rejectionModal.open && (
+        <RejectionModal
+          rejectionModal={rejectionModal}
+          setRejectionModal={setRejectionModal}
+          handleWithdrawalAction={handleWithdrawalAction}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ✅ Extracted Modals Below */
+
+function EditWalletModal({
+  selectedWallet,
+  editData,
+  setEditData,
+  setSelectedWallet,
+  handleSave,
+  handleWithdrawalAction,
+  setRejectionModal,
+}) {
+  return (
+    <div className="fixed inset-0 backdrop-blur-md z-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-y-auto max-h-[90vh] relative">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl p-6">
+          <button
+            onClick={() => setSelectedWallet(null)}
+            className="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 rounded-full w-8 h-8 flex items-center justify-center text-2xl"
+          >
+            ×
+          </button>
+          <h2 className="text-xl font-bold text-white">Edit Wallet</h2>
+          <p className="text-blue-100 mt-1">{selectedWallet.partnerId?.name}</p>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Inputs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-blue-800 font-semibold mb-1">
+                Total Revenue
+              </label>
+              <input
+                type="number"
+                value={editData.totalRevenue}
+                onChange={(e) =>
+                  setEditData({ ...editData, totalRevenue: e.target.value })
+                }
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+            <div>
+              <label className="block text-green-800 font-semibold mb-1">
+                Available Balance
+              </label>
+              <input
+                type="number"
+                value={editData.availableBalance}
+                onChange={(e) =>
+                  setEditData({ ...editData, availableBalance: e.target.value })
+                }
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400"
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleSave}
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:scale-105 transition-all shadow-md"
+          >
+            Save Changes
+          </button>
+
+          {/* Withdrawals */}
+          {selectedWallet.withdrawals?.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-800 mt-6">
+                Withdrawal Requests
+              </h3>
+              {selectedWallet.withdrawals.map((w) => (
+                <div
+                  key={w._id}
+                  className="mt-3 p-3 border rounded-lg bg-gray-50 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="font-semibold">₹{w.amount}</p>
+                    <p className="text-sm text-gray-500">
+                      {w.status.toUpperCase()}
+                    </p>
+                  </div>
+                  {w.status === "pending" && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() =>
+                          handleWithdrawalAction(
+                            selectedWallet._id,
+                            w._id,
+                            "approved"
+                          )
+                        }
+                        className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() =>
+                          setRejectionModal({
+                            open: true,
+                            walletId: selectedWallet._id,
+                            requestId: w._id,
+                            reason: "",
+                          })
+                        }
+                        className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RejectionModal({ rejectionModal, setRejectionModal, handleWithdrawalAction }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h3 className="text-xl font-bold text-red-600 mb-3">Rejection Reason</h3>
+        <textarea
+          rows="4"
+          className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-red-400"
+          placeholder="Enter reason for rejection..."
+          value={rejectionModal.reason}
+          onChange={(e) =>
+            setRejectionModal({ ...rejectionModal, reason: e.target.value })
+          }
+        ></textarea>
+        <div className="mt-4 flex gap-3">
+          <button
+            onClick={() => setRejectionModal({ open: false, reason: "" })}
+            className="flex-1 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 font-semibold"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() =>
+              handleWithdrawalAction(
+                rejectionModal.walletId,
+                rejectionModal.requestId,
+                "rejected",
+                rejectionModal.reason
+              )
+            }
+            className="flex-1 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold hover:scale-105 transition-all"
+          >
+            Submit
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
