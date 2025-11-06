@@ -107,7 +107,6 @@
 
 
 
-
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -129,30 +128,55 @@ const port = process.env.PORT || 4000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Middleware
+/* ----------------------------------------------------
+   ✅ CORS FIX for Render & Vercel
+---------------------------------------------------- */
+const allowedOrigins = [
+  "http://localhost:5173", // local dev
+  "https://institute-client.vercel.app", // client frontend
+  "https://institute-admin-theta.vercel.app", // admin/partner frontend
+];
+
+// ✅ Allow CORS for both actual & preflight (OPTIONS) requests
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",               // local dev
-      "https://institute.vercel.app",        // admin site
-      "https://institute-client.vercel.app"  // client site
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // Allow requests with no origin
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        console.log("❌ Blocked by CORS:", origin);
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+// ✅ Handle preflight requests
+app.options("*", cors());
+
+/* ----------------------------------------------------
+   ✅ Express Middleware
+---------------------------------------------------- */
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ✅ Connect to DB
+/* ----------------------------------------------------
+   ✅ MongoDB Connection
+---------------------------------------------------- */
 if (!process.env.MONGODB_URI) {
   console.error("❌ Missing MONGODB_URI in .env file");
   process.exit(1);
 }
 connectDB();
 
-// ✅ Routes
+/* ----------------------------------------------------
+   ✅ Routes
+---------------------------------------------------- */
 app.use("/api/carrer-form", CarrerFormRoutes);
 app.use("/api/user", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
@@ -160,25 +184,31 @@ app.use("/api/partners", partnerRoutes);
 app.use("/api/client-status", clientStatusRoutes);
 app.use("/api/wallet", walletRoutes);
 
-// ✅ Root
+/* ----------------------------------------------------
+   ✅ Root
+---------------------------------------------------- */
 app.get("/", (req, res) => {
   res.send("🚀 API is running successfully on Render!");
 });
 
-// ✅ 404 Handler
+/* ----------------------------------------------------
+   ✅ 404 & Error Handlers
+---------------------------------------------------- */
 app.use((req, res, next) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
 
-// ✅ Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("❌ Server Error:", err.stack);
+  console.error("❌ Server Error:", err.message);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Internal Server Error",
   });
 });
 
+/* ----------------------------------------------------
+   ✅ Start Server
+---------------------------------------------------- */
 app.listen(port, () => {
   console.log(`✅ Server is running on port ${port}`);
 });
