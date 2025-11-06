@@ -30,29 +30,32 @@ const upload = multer({ storage });
 router.get("/public/logo/:agentId", async (req, res) => {
   try {
     const { agentId } = req.params;
-    console.log("🧠 Public logo fetch for agentId:", agentId);
+    console.log("🧠 Fetching public logo for:", agentId);
 
     const partner = await UserModel.findOne({ agentId });
+
     if (!partner) {
+      console.log("❌ Partner not found:", agentId);
       return res.status(404).json({ message: "Partner not found" });
     }
 
-    // ✅ Use BASE_URL from .env for production (or fallback to localhost)
-    const baseUrl =
-      process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const logoPath = partner.logo || null;
 
-    const logoUrl = partner.logo
-      ? `${baseUrl}${
-          partner.logo.startsWith("/") ? partner.logo : "/" + partner.logo
-        }`
+    const logoUrl = logoPath
+      ? logoPath.startsWith("http")
+        ? logoPath
+        : `${baseUrl}${logoPath.startsWith("/") ? logoPath : "/" + logoPath}`
       : null;
+
+    console.log("✅ Partner logo fetched:", { name: partner.name, logo: logoUrl });
 
     res.status(200).json({
       name: partner.name || "Unknown",
       logo: logoUrl,
     });
   } catch (error) {
-    console.error("❌ Error fetching public partner logo:", error);
+    console.error("❌ Error fetching partner logo:", error.message);
     res.status(500).json({ message: "Server error fetching logo" });
   }
 });
