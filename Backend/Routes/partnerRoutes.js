@@ -33,11 +33,16 @@ router.get("/public/logo/:agentId", async (req, res) => {
     console.log("🧠 Public logo fetch for agentId:", agentId);
 
     const partner = await UserModel.findOne({ agentId });
-    if (!partner)
+    if (!partner) {
       return res.status(404).json({ message: "Partner not found" });
+    }
+
+    // ✅ Use BASE_URL from .env for production (or fallback to localhost)
+    const baseUrl =
+      process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
 
     const logoUrl = partner.logo
-      ? `http://localhost:4000${
+      ? `${baseUrl}${
           partner.logo.startsWith("/") ? partner.logo : "/" + partner.logo
         }`
       : null;
@@ -51,6 +56,8 @@ router.get("/public/logo/:agentId", async (req, res) => {
     res.status(500).json({ message: "Server error fetching logo" });
   }
 });
+
+
 /* ---------------------------------------------------
    ✅ ADMIN ROUTES (Protected)
 --------------------------------------------------- */
