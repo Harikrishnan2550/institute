@@ -417,7 +417,7 @@ export default function EditClientPage() {
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition font-semibold"
+            className="w-full bg-green-400 text-white py-2 rounded-md hover:bg-green-600 transition font-semibold"
           >
             Save Changes
           </button>
