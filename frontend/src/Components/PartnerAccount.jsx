@@ -526,7 +526,7 @@ export default function PartnerAccount() {
       <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6">
+          <div className="bg-green-600 p-4 sm:p-6">
             <button
               onClick={() => navigate("/partner/dashboard")}
               className="flex items-center gap-2 text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-xl transition-all font-semibold mb-4"
@@ -545,7 +545,7 @@ export default function PartnerAccount() {
             {/* ✅ Logo Section */}
             <section className="mb-6 sm:mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
+                <div className="h-1 w-12 bg-green-600 rounded"></div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800">
                   Profile Logo
                 </h2>
@@ -578,7 +578,7 @@ export default function PartnerAccount() {
             {/* ✅ Personal Details */}
             <section className="mb-6 sm:mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
+                <div className="h-1 w-12 bg-green-600 rounded"></div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800">
                   Personal Details
                 </h2>
@@ -605,7 +605,7 @@ export default function PartnerAccount() {
             {/* ✅ Bank Details */}
             <section className="mb-6 sm:mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
+                <div className="h-1 w-12 bg-green-600 rounded"></div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800">
                   Bank Details
                 </h2>
@@ -648,7 +648,7 @@ export default function PartnerAccount() {
             {/* ✅ Change Password */}
             <section className="mb-6 sm:mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
+                <div className="h-1 w-12 bg-green-600 rounded"></div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800">
                   Change Password
                 </h2>
@@ -703,7 +703,7 @@ export default function PartnerAccount() {
             <div className="border-t border-gray-200 pt-6">
               <button
                 onClick={handleSave}
-                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                className="w-full sm:w-auto bg-green-600 hover:from-green-400 hover:to-green-600 text-white px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
               >
                 Save Changes
               </button>
