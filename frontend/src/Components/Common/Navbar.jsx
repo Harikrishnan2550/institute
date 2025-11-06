@@ -166,14 +166,17 @@ const Navbar = () => {
             {isPartner && (
               <div className="flex-shrink-0">
                 <img
-                  src={
-                    partnerLogo
-                      ? `${BASE_URL}${partnerLogo}`
-                      : "/logos/default-partner.png"
-                  }
-                  alt="Partner Logo"
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-lg bg-white"
-                />
+  src={
+    partnerLogo
+      ? partnerLogo.startsWith("http")
+        ? partnerLogo
+        : `${BASE_URL}${partnerLogo.startsWith("/") ? partnerLogo : "/" + partnerLogo}`
+      : "/logos/default-partner.png"
+  }
+  alt="Partner Logo"
+  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-lg bg-white"
+/>
+
               </div>
             )}
 
