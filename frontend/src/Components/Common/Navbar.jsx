@@ -202,7 +202,7 @@ const Navbar = () => {
             {isPartner && (
               <button
                 onClick={() => navigate("/partner/account")}
-                className="bg-green-400 hover:bg-green-600 text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                className="bg-green-600 hover:bg-green-400 text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 <span className="hidden sm:inline">Account</span>
                 <span className="sm:hidden">👤</span>
