@@ -435,7 +435,7 @@ export default function PartnerWallet() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-green-500 bg-clip-text text-transparent">
           My Wallet
         </h1>
         <p className="text-gray-600 mt-2 text-sm sm:text-base">
@@ -477,7 +477,7 @@ export default function PartnerWallet() {
 
       {/* Withdrawal Form */}
       <div className="bg-white shadow-xl rounded-2xl border border-gray-200 mb-6 sm:mb-10 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+        <div className="bg-green-500 p-6">
           <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
             <span>💳</span>
             Request Withdrawal
@@ -505,7 +505,7 @@ export default function PartnerWallet() {
             </div>
             <button
               onClick={handleWithdrawal}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="px-6 py-3 bg-green-500 hover:from-green-400 hover:to-green-600 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               Submit Request
             </button>
