@@ -29,7 +29,7 @@ const Sidebar = () => {
     <>
       {/* Mobile toggle button */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+        className="md:hidden fixed top-4 left-4 z-50 bg-green-600 text-white p-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
         onClick={toggleSidebar}
         aria-label="Toggle sidebar"
       >
@@ -51,13 +51,13 @@ const Sidebar = () => {
       >
         {/* Logo + Role */}
         <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-700/50 bg-gray-800/30">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center shadow-lg">
             <span className="text-xl font-bold">
               {isAdmin ? "A" : "P"}
             </span>
           </div>
           <div>
-            <h2 className="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            <h2 className="text-lg font-bold bg-green-600 bg-clip-text text-transparent">
               {isAdmin ? "Admin Panel" : "Partner Panel"}
             </h2>
             <p className="text-xs text-gray-400 font-medium">
@@ -76,7 +76,7 @@ const Sidebar = () => {
                 `flex items-center gap-4 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-200 group relative overflow-hidden
                 ${
                   isActive
-                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
+                    ? "bg-green-600 text-white shadow-lg shadow-indigo-500/30"
                     : "text-gray-300 hover:bg-gray-800/50 hover:text-white"
                 }`
               }
