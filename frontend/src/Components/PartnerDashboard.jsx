@@ -143,25 +143,32 @@
 
 
 
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios"; // ✅ centralized axios
+import axiosInstance from "../api/axios";
 import { toast } from "react-toastify";
 
 export default function PartnerDashboard() {
   const navigate = useNavigate();
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [partnerLink, setPartnerLink] = useState("");
 
   // 🟢 Fetch wallet data
   useEffect(() => {
     const fetchWallet = async () => {
       try {
         const token = localStorage.getItem("token");
+        const agentId = localStorage.getItem("agentId");
+
         if (!token) {
           toast.error("Unauthorized: Please log in again.");
           return;
+        }
+
+        // ✅ Build partner referral link
+        if (agentId) {
+          setPartnerLink(`https://institute-xp9z.vercel.app/?agentId=${agentId}`);
         }
 
         const res = await axiosInstance.get("/api/wallet/my-wallet", {
@@ -191,6 +198,14 @@ export default function PartnerDashboard() {
     wallet?.withdrawals
       ?.filter((w) => w.status === "pending")
       .reduce((sum, w) => sum + w.amount, 0) || 0;
+
+  // 📋 Copy partner link
+  const copyLink = () => {
+    if (partnerLink) {
+      navigator.clipboard.writeText(partnerLink);
+      toast.success("✅ Link copied to clipboard!");
+    }
+  };
 
   if (loading) {
     return (
@@ -248,11 +263,11 @@ export default function PartnerDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white shadow-xl rounded-2xl border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span>⚡</span>
-          Quick Actions
+      <div className="bg-white shadow-xl rounded-2xl border border-gray-200 p-6 space-y-6">
+        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+          ⚡ Quick Actions
         </h2>
+
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => navigate("/partner/wallet")}
@@ -267,6 +282,32 @@ export default function PartnerDashboard() {
             Account Settings
           </button>
         </div>
+
+        {/* 💡 Partner Referral Link */}
+        {partnerLink && (
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              🔗 Your Client Form Link
+            </h3>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <input
+                type="text"
+                value={partnerLink}
+                readOnly
+                className="w-full sm:flex-1 px-4 py-2 border rounded-lg text-gray-700 bg-gray-50 font-mono text-sm"
+              />
+              <button
+                onClick={copyLink}
+                className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:scale-105 transition-all shadow-md"
+              >
+                Copy Link
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              Share this link with clients. Submissions will be linked to your agent ID.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
