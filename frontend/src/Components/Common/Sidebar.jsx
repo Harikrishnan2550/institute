@@ -76,7 +76,7 @@ const Sidebar = () => {
                 `flex items-center gap-4 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-200 group relative overflow-hidden
                 ${
                   isActive
-                    ? "bg-green-600 text-white shadow-lg shadow-indigo-500/30"
+                    ? "bg-green-600 text-white shadow-lg shadow-green-500/30"
                     : "text-gray-300 hover:bg-gray-800/50 hover:text-white"
                 }`
               }
