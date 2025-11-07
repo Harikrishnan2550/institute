@@ -61,7 +61,7 @@ const Sidebar = () => {
               {isAdmin ? "Admin Panel" : "Partner Panel"}
             </h2>
             <p className="text-xs text-gray-400 font-medium">
-              {isAdmin ? "Full Access" : "Restricted Access"}
+              {isAdmin ? "Full Access" : ""}
             </p>
           </div>
         </div>
