@@ -153,7 +153,6 @@ const generateAgentId = async () => {
   return `AGT-${nextNumber}`;
 };
 
-
 // ✅ Register (Partner or Admin)
 export const register = async (req, res) => {
   try {
@@ -163,25 +162,25 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ Prevent creating admin manually through this route
+    // Prevent creating admin manually
     if (email === "admin@institute.com") {
       return res.status(403).json({
         message: "Admin account cannot be created manually",
       });
     }
 
-    // ✅ Check for existing user
+    // Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: "User already exists" });
 
-    // ✅ Hash password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Generate unique Agent ID
+    // Generate unique Agent ID
     const agentId = await generateAgentId();
 
-    // ✅ Create new partner
+    // Create new partner
     const newUser = new User({
       name,
       email,
@@ -192,7 +191,7 @@ export const register = async (req, res) => {
 
     await newUser.save();
 
-    // ✅ Automatically create wallet after successful partner registration
+    // ✅ Automatically create wallet
     await Wallet.create({
       partnerId: newUser._id,
       totalRevenue: 0,
@@ -201,8 +200,17 @@ export const register = async (req, res) => {
       totalWithdrawn: 0,
     });
 
+    // ✅ Generate JWT token after registration
+    const token = jwt.sign(
+      { id: newUser._id, role: newUser.role, agentId: newUser.agentId },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // ✅ Return token + user data (same as login)
     res.status(201).json({
       message: "Partner registered successfully",
+      token,
       user: {
         id: newUser._id,
         name: newUser.name,
@@ -216,6 +224,7 @@ export const register = async (req, res) => {
     res.status(500).json({ message: "Server error during registration" });
   }
 };
+
 
 // ✅ Login (Admin or Partner)
 export const login = async (req, res) => {

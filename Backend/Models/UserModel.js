@@ -19,6 +19,7 @@ const UserSchema = new mongoose.Schema(
     position: { type: String },
     workingStatus: { type: String },
     logo: { type: String },
+    address: { type: String, default: "" },
 
     // ✅ Unique Agent ID for Partners
     agentId: { type: String,  },

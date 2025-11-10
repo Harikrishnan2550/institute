@@ -1,334 +1,33 @@
-// import React, { useEffect, useState } from "react";
-// import axios from "axios";
-// import { useNavigate } from "react-router-dom";
-// import { toast } from "react-toastify";
-
-// const AdminClientTrack = () => {
-//   const [clients, setClients] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [updatingId, setUpdatingId] = useState(null);
-//   const navigate = useNavigate();
-
-//   const BASE = "http://localhost:4000/api/carrer-form";
-
-//   // 🟢 Fetch clients list (Admin only)
-//   useEffect(() => {
-//     const fetchClients = async () => {
-//       try {
-//         const token = localStorage.getItem("token");
-//         if (!token) {
-//           toast.error("Unauthorized: Please login again");
-//           navigate("/login");
-//           return;
-//         }
-
-//         const res = await axios.get(`${BASE}/all`, {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         });
-
-//         setClients(res.data.data || res.data || []);
-//       } catch (err) {
-//         console.error("Error fetching clients:", err);
-
-//         if (err.response?.status === 401) {
-//           toast.error("Session expired. Please login again.");
-//           localStorage.removeItem("token");
-//           navigate("/login");
-//         } else {
-//           toast.error("Failed to fetch clients");
-//         }
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchClients();
-//   }, [navigate]);
-
-//   // 🟢 Navigate to client details page
-//   const handleView = (client) => {
-//     navigate(`/admin/client/${client._id}`, { state: { client } });
-//   };
-
-//   // 🟢 Update connection status (Connected / Not Connected)
-//   const handleStatusChange = async (clientId, newStatus) => {
-//     // Optimistic UI update
-//     setClients((prev) =>
-//       prev.map((c) =>
-//         c._id === clientId ? { ...c, connectionStatus: newStatus } : c
-//       )
-//     );
-
-//     setUpdatingId(clientId);
-//     try {
-//       const token = localStorage.getItem("token");
-//       await axios.put(
-//         `${BASE}/${clientId}`,
-//         { connectionStatus: newStatus },
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-//       toast.success("Status updated successfully");
-//     } catch (err) {
-//       console.error("Failed to update status:", err);
-//       toast.error("Failed to update status. Please try again.");
-//     } finally {
-//       setUpdatingId(null);
-//     }
-//   };
-
-//   if (loading)
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-//         <div className="text-center">
-//           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-//           <p className="mt-4 text-gray-600 font-medium">Loading clients...</p>
-//         </div>
-//       </div>
-//     );
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
-//       {/* Header */}
-//       <div className="mb-6 sm:mb-8">
-//         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-//           Client Tracking
-//         </h1>
-//         <p className="text-gray-600 mt-2 text-sm sm:text-base">
-//           Manage and track all client interactions
-//         </p>
-//       </div>
-
-//       {/* Mobile Card View */}
-//       <div className="block lg:hidden space-y-4">
-//         {clients.map((client) => (
-//           <div
-//             key={client._id}
-//             className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
-//           >
-//             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
-//               <h3 className="text-white font-bold text-lg">{client.name}</h3>
-//               <p className="text-blue-100 text-sm">
-//                 {client.createdAt
-//                   ? new Date(client.createdAt).toLocaleDateString()
-//                   : "—"}
-//               </p>
-//             </div>
-
-//             <div className="p-4 space-y-3">
-//               <div className="grid grid-cols-2 gap-3">
-//                 <div className="bg-blue-50 rounded-lg p-3">
-//                   <p className="text-xs text-blue-600 font-semibold mb-1">Email</p>
-//                   <p className="text-sm text-gray-900 font-medium truncate">
-//                     {client.email}
-//                   </p>
-//                 </div>
-//                 <div className="bg-green-50 rounded-lg p-3">
-//                   <p className="text-xs text-green-600 font-semibold mb-1">Number</p>
-//                   <p className="text-sm text-gray-900 font-medium">
-//                     {client.whatsappNumber}
-//                   </p>
-//                 </div>
-//               </div>
-
-//               <div className="grid grid-cols-2 gap-3">
-//                 <div className="bg-purple-50 rounded-lg p-3">
-//                   <p className="text-xs text-purple-600 font-semibold mb-1">Course</p>
-//                   <p className="text-sm text-gray-900 font-medium truncate">
-//                     {client.q7_preferredDomain || "—"}
-//                   </p>
-//                 </div>
-//                 <div className="bg-orange-50 rounded-lg p-3">
-//                   <p className="text-xs text-orange-600 font-semibold mb-1">Location</p>
-//                   <p className="text-sm text-gray-900 font-medium truncate">
-//                     {client.city}, {client.state}
-//                   </p>
-//                 </div>
-//               </div>
-
-//               <div className="bg-gray-50 rounded-lg p-3">
-//                 <p className="text-xs text-gray-600 font-semibold mb-2">Connection Status</p>
-//                 <div className="flex items-center gap-2">
-//                   <select
-//                     value={client.connectionStatus || "Not Connected"}
-//                     onChange={(e) =>
-//                       handleStatusChange(client._id, e.target.value)
-//                     }
-//                     disabled={updatingId === client._id}
-//                     className={`flex-1 px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition text-sm font-semibold ${
-//                       client.connectionStatus === "Connected"
-//                         ? "bg-green-50 border-green-300 text-green-700 focus:ring-green-200"
-//                         : "bg-red-50 border-red-300 text-red-700 focus:ring-red-200"
-//                     }`}
-//                   >
-//                     <option value="Connected">Connected</option>
-//                     <option value="Not Connected">Not Connected</option>
-//                   </select>
-//                   {updatingId === client._id && (
-//                     <span className="text-xs text-gray-500 animate-pulse">
-//                       Saving...
-//                     </span>
-//                   )}
-//                 </div>
-//               </div>
-
-//               <button
-//                 onClick={() => handleView(client)}
-//                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105"
-//               >
-//                 View Details
-//               </button>
-//             </div>
-//           </div>
-//         ))}
-
-//         {clients.length === 0 && (
-//           <div className="text-center bg-white rounded-2xl shadow-xl p-8">
-//             <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-//               <span className="text-4xl">📭</span>
-//             </div>
-//             <p className="text-gray-500 text-lg">No clients found</p>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Desktop Table View */}
-//       <div className="hidden lg:block bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden">
-//         <div className="overflow-x-auto">
-//           <table className="min-w-full">
-//             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-//               <tr>
-//                 <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-//                   Date
-//                 </th>
-//                 <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-//                   Name
-//                 </th>
-//                 <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-//                   Email
-//                 </th>
-//                 <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-//                   Number
-//                 </th>
-//                 <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-//                   Course
-//                 </th>
-//                 <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-//                   Location
-//                 </th>
-//                 <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-//                   Status
-//                 </th>
-//                 <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-//                   Action
-//                 </th>
-//               </tr>
-//             </thead>
-
-//             <tbody className="divide-y divide-gray-200">
-//               {clients.map((client) => (
-//                 <tr
-//                   key={client._id}
-//                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200"
-//                 >
-//                   <td className="p-4 whitespace-nowrap text-gray-600">
-//                     {client.createdAt
-//                       ? new Date(client.createdAt).toLocaleDateString()
-//                       : "—"}
-//                   </td>
-//                   <td className="p-4 whitespace-nowrap font-semibold text-gray-900">
-//                     {client.name}
-//                   </td>
-//                   <td className="p-4 whitespace-nowrap text-gray-600">
-//                     {client.email}
-//                   </td>
-//                   <td className="p-4 whitespace-nowrap text-gray-600">
-//                     {client.whatsappNumber}
-//                   </td>
-//                   <td className="p-4 whitespace-nowrap text-gray-600">
-//                     {client.q7_preferredDomain || "—"}
-//                   </td>
-//                   <td className="p-4 whitespace-nowrap text-gray-600">
-//                     {client.city}, {client.state}
-//                   </td>
-
-//                   <td className="p-4 whitespace-nowrap">
-//                     <div className="flex items-center gap-2">
-//                       <select
-//                         value={client.connectionStatus || "Not Connected"}
-//                         onChange={(e) =>
-//                           handleStatusChange(client._id, e.target.value)
-//                         }
-//                         disabled={updatingId === client._id}
-//                         className={`px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition font-semibold text-sm ${
-//                           client.connectionStatus === "Connected"
-//                             ? "bg-green-50 border-green-300 text-green-700 focus:ring-green-200"
-//                             : "bg-red-50 border-red-300 text-red-700 focus:ring-red-200"
-//                         }`}
-//                       >
-//                         <option value="Connected">Connected</option>
-//                         <option value="Not Connected">Not Connected</option>
-//                       </select>
-//                       {updatingId === client._id && (
-//                         <span className="text-xs text-gray-500 animate-pulse">
-//                           Saving...
-//                         </span>
-//                       )}
-//                     </div>
-//                   </td>
-
-//                   <td className="p-4 whitespace-nowrap">
-//                     <button
-//                       onClick={() => handleView(client)}
-//                       className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
-//                     >
-//                       View
-//                     </button>
-//                   </td>
-//                 </tr>
-//               ))}
-
-//               {clients.length === 0 && (
-//                 <tr>
-//                   <td colSpan="8" className="p-12 text-center">
-//                     <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-//                       <span className="text-4xl">📭</span>
-//                     </div>
-//                     <p className="text-gray-500 text-lg">No clients found</p>
-//                   </td>
-//                 </tr>
-//               )}
-//             </tbody>
-//           </table>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AdminClientTrack;
-
-
-
-
-
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../api/axios"; // ✅ use centralized axios
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import {
+  Calendar,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  BookOpen,
+  Eye,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 const AdminClientTrack = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalClients, setTotalClients] = useState(0);
   const navigate = useNavigate();
 
-  // 🟢 Fetch clients list (Admin only)
+  const BASE = "http://localhost:4000/api/carrer-form";
+
+  // 🟢 Fetch clients with pagination (Admin only)
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -339,15 +38,17 @@ const AdminClientTrack = () => {
           return;
         }
 
-        // ✅ use axiosInstance with relative path
-        const res = await axiosInstance.get("/api/carrer-form/all", {
+        setLoading(true);
+        const res = await axios.get(`${BASE}/all?page=${page}&limit=${limit}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setClients(res.data.data || res.data || []);
+        setClients(Array.isArray(res.data) ? res.data : res.data.data || []);
+        setTotalClients(
+          res.data.total || (Array.isArray(res.data) ? res.data.length : 0)
+        );
       } catch (err) {
         console.error("Error fetching clients:", err);
-
         if (err.response?.status === 401) {
           toast.error("Session expired. Please login again.");
           localStorage.removeItem("token");
@@ -361,27 +62,26 @@ const AdminClientTrack = () => {
     };
 
     fetchClients();
-  }, [navigate]);
+  }, [page, limit, navigate]);
 
   // 🟢 Navigate to client details page
   const handleView = (client) => {
     navigate(`/admin/client/${client._id}`, { state: { client } });
   };
 
-  // 🟢 Update connection status (Connected / Not Connected)
+  // 🟢 Update connection status
   const handleStatusChange = async (clientId, newStatus) => {
-    // Optimistic UI update
     setClients((prev) =>
       prev.map((c) =>
         c._id === clientId ? { ...c, connectionStatus: newStatus } : c
       )
     );
-
     setUpdatingId(clientId);
+
     try {
       const token = localStorage.getItem("token");
-      await axiosInstance.put(
-        `/api/carrer-form/${clientId}`,
+      await axios.put(
+        `${BASE}/${clientId}`,
         { connectionStatus: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -394,233 +94,489 @@ const AdminClientTrack = () => {
     }
   };
 
+  // 🟢 Pagination controls
+  const totalPages = Math.ceil(totalClients / limit);
+
+  const handlePrevPage = () => {
+    if (page > 1) setPage((prev) => prev - 1);
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) setPage((prev) => prev + 1);
+  };
+
   if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600 font-medium">Loading clients...</p>
+          <div className="relative inline-block">
+            <div className="w-20 h-20 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 border-4 border-green-500/30 border-b-green-500 rounded-full animate-spin"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "0.8s",
+              }}
+            ></div>
+          </div>
+          <p className="mt-6 text-white/80 font-semibold text-lg tracking-wide">
+            Loading clients...
+          </p>
         </div>
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+      {/* Background Orbs */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
+      </div>
+
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-green-600 bg-clip-text text-transparent">
-          Client Tracking
-        </h1>
-        <p className="text-gray-600 mt-2 text-sm sm:text-base">
-          Manage and track all client interactions
-        </p>
-      </div>
+      <div className="relative mb-10 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
+            Client Tracking
+          </h1>
+          <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">
+            Manage and track all client interactions
+          </p>
+        </div>
 
-      {/* Mobile Card View */}
-      <div className="block lg:hidden space-y-4">
-        {clients.map((client) => (
-          <div
-            key={client._id}
-            className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        {/* Limit Selector */}
+        <div className="flex items-center gap-2">
+          <label className="text-white/70 text-sm font-medium">Rows:</label>
+          <select
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
           >
-            <div className="bg-green-600 p-4">
-              <h3 className="text-white font-bold text-lg">{client.name}</h3>
-              <p className="text-blue-100 text-sm">
-                {client.createdAt
-                  ? new Date(client.createdAt).toLocaleDateString()
-                  : "—"}
-              </p>
-            </div>
-
-            <div className="p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-blue-50 rounded-lg p-3">
-                  <p className="text-xs text-blue-600 font-semibold mb-1">Email</p>
-                  <p className="text-sm text-gray-900 font-medium truncate">
-                    {client.email}
-                  </p>
-                </div>
-                <div className="bg-green-50 rounded-lg p-3">
-                  <p className="text-xs text-green-600 font-semibold mb-1">Number</p>
-                  <p className="text-sm text-gray-900 font-medium">
-                    {client.whatsappNumber}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-purple-50 rounded-lg p-3">
-                  <p className="text-xs text-purple-600 font-semibold mb-1">Course</p>
-                  <p className="text-sm text-gray-900 font-medium truncate">
-                    {client.q7_preferredDomain || "—"}
-                  </p>
-                </div>
-                <div className="bg-orange-50 rounded-lg p-3">
-                  <p className="text-xs text-orange-600 font-semibold mb-1">Location</p>
-                  <p className="text-sm text-gray-900 font-medium truncate">
-                    {client.city}, {client.state}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-xs text-gray-600 font-semibold mb-2">Connection Status</p>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={client.connectionStatus || "Not Connected"}
-                    onChange={(e) =>
-                      handleStatusChange(client._id, e.target.value)
-                    }
-                    disabled={updatingId === client._id}
-                    className={`flex-1 px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition text-sm font-semibold ${
-                      client.connectionStatus === "Connected"
-                        ? "bg-green-50 border-green-300 text-green-700 focus:ring-green-200"
-                        : "bg-red-50 border-red-300 text-red-700 focus:ring-red-200"
-                    }`}
-                  >
-                    <option value="Connected">Connected</option>
-                    <option value="Not Connected">Not Connected</option>
-                  </select>
-                  {updatingId === client._id && (
-                    <span className="text-xs text-gray-500 animate-pulse">
-                      Saving...
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <button
-                onClick={() => handleView(client)}
-                className="w-full bg-green-600 hover:from-green-400 hover:to-green-600 text-white py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105"
-              >
-                View Details
-              </button>
-            </div>
-          </div>
-        ))}
-
-        {clients.length === 0 && (
-          <div className="text-center bg-white rounded-2xl shadow-xl p-8">
-            <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <span className="text-4xl">📭</span>
-            </div>
-            <p className="text-gray-500 text-lg">No clients found</p>
-          </div>
-        )}
+            {[10, 20, 50].map((size) => (
+              <option key={size} value={size} className="text-black">
+                {size}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden">
+      {/* Desktop Table */}
+      <motion.div
+        key={page}
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="hidden lg:block bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
+      >
         <div className="overflow-x-auto">
           <table className="min-w-full">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-              <tr>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-                  Date
-                </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-                  Name
-                </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-                  Email
-                </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-                  Number
-                </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-                  Course
-                </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-                  Location
-                </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-                  Status
-                </th>
-                <th className="p-4 text-left text-sm font-bold text-gray-700 whitespace-nowrap">
-                  Action
-                </th>
+            <thead>
+              <tr className="bg-gradient-to-r from-emerald-600/20 to-teal-600/20">
+                {[
+                  "Date",
+                  "Name",
+                  "Email",
+                  "WhatsApp",
+                  "Course",
+                  "Location",
+                  "Status",
+                  "Action",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-6 py-5 text-left text-sm font-bold text-white"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-200">
-              {clients.map((client) => (
-                <tr
-                  key={client._id}
-                  className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200"
-                >
-                  <td className="p-4 whitespace-nowrap text-gray-600">
-                    {client.createdAt
-                      ? new Date(client.createdAt).toLocaleDateString()
-                      : "—"}
-                  </td>
-                  <td className="p-4 whitespace-nowrap font-semibold text-gray-900">
-                    {client.name}
-                  </td>
-                  <td className="p-4 whitespace-nowrap text-gray-600">
-                    {client.email}
-                  </td>
-                  <td className="p-4 whitespace-nowrap text-gray-600">
-                    {client.whatsappNumber}
-                  </td>
-                  <td className="p-4 whitespace-nowrap text-gray-600">
-                    {client.q7_preferredDomain || "—"}
-                  </td>
-                  <td className="p-4 whitespace-nowrap text-gray-600">
-                    {client.city}, {client.state}
-                  </td>
-
-                  <td className="p-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
+            <tbody className="divide-y divide-white/10">
+              {clients.length > 0 ? (
+                clients.map((client) => (
+                  <motion.tr
+                    key={client._id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="hover:bg-white/5 transition-all duration-300"
+                  >
+                    <td className="px-6 py-4 text-sm text-white/80 font-medium">
+                      <Calendar className="w-4 h-4 text-emerald-300 inline-block mr-2" />
+                      {new Date(client.createdAt).toLocaleDateString("en-IN")}
+                    </td>
+                    <td className="px-6 py-4 text-white font-semibold">
+                      {client.name}
+                    </td>
+                    <td className="px-6 py-4 text-white/80">{client.email}</td>
+                    <td className="px-6 py-4 text-white/80">
+                      {client.whatsappNumber}
+                    </td>
+                    <td className="px-6 py-4 text-white/80">
+                      {client.q7_preferredDomain || "—"}
+                    </td>
+                    <td className="px-6 py-4 text-white/80">
+                      {client.city}, {client.state}
+                    </td>
+                    <td className="px-6 py-4">
                       <select
                         value={client.connectionStatus || "Not Connected"}
                         onChange={(e) =>
                           handleStatusChange(client._id, e.target.value)
                         }
                         disabled={updatingId === client._id}
-                        className={`px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition font-semibold text-sm ${
+                        className={`px-3 py-2 rounded-lg text-sm border-2 focus:outline-none ${
                           client.connectionStatus === "Connected"
-                            ? "bg-green-50 border-green-300 text-green-700 focus:ring-green-200"
-                            : "bg-red-50 border-red-300 text-red-700 focus:ring-red-200"
+                            ? "bg-emerald-500/20 border-emerald-400 text-emerald-300"
+                            : "bg-red-500/20 border-red-400 text-red-300"
                         }`}
                       >
                         <option value="Connected">Connected</option>
                         <option value="Not Connected">Not Connected</option>
                       </select>
                       {updatingId === client._id && (
-                        <span className="text-xs text-gray-500 animate-pulse">
-                          Saving...
-                        </span>
+                        <RefreshCw className="w-4 h-4 text-emerald-300 animate-spin inline-block ml-2" />
                       )}
-                    </div>
-                  </td>
-
-                  <td className="p-4 whitespace-nowrap">
-                    <button
-                      onClick={() => handleView(client)}
-                      className="px-5 py-2 bg-green-600 hover:from-green-400 hover:to-green-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105"
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {clients.length === 0 && (
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={() => handleView(client)}
+                        className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-medium shadow-lg hover:scale-105 transition-transform"
+                      >
+                        <Eye className="w-4 h-4" /> View
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))
+              ) : (
                 <tr>
-                  <td colSpan="8" className="p-12 text-center">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                      <span className="text-4xl">📭</span>
-                    </div>
-                    <p className="text-gray-500 text-lg">No clients found</p>
+                  <td colSpan={8} className="p-12 text-center text-white/60">
+                    No clients found
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center items-center gap-4">
+          <button
+            onClick={handlePrevPage}
+            disabled={page === 1}
+            className="flex items-center gap-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm font-semibold hover:bg-white/20 disabled:opacity-40"
+          >
+            <ChevronLeft size={18} /> Prev
+          </button>
+          <span className="text-white/80 text-sm font-medium">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={page === totalPages}
+            className="flex items-center gap-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm font-semibold hover:bg-white/20 disabled:opacity-40"
+          >
+            Next <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
 export default AdminClientTrack;
+
+// import React, { useEffect, useState } from "react";
+// import { motion } from "framer-motion";
+// import { Calendar, User, Mail, Phone, MapPin, BookOpen } from "lucide-react";
+
+// export default function AdminClientTrack() {
+//   const [clients, setClients] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     // Simulated data for demo
+//     const mockClients = [
+//       {
+//         _id: "1",
+//         createdAt: "2025-11-01T10:30:00Z",
+//         name: "John Doe",
+//         email: "john.doe@example.com",
+//         whatsappNumber: "+91 9876543210",
+//         q7_preferredDomain: "Web Development",
+//         city: "Mumbai",
+//         state: "Maharashtra"
+//       },
+//       {
+//         _id: "2",
+//         createdAt: "2025-11-05T14:20:00Z",
+//         name: "Jane Smith",
+//         email: "jane.smith@example.com",
+//         whatsappNumber: "+91 9876543211",
+//         q7_preferredDomain: "Data Science",
+//         city: "Bangalore",
+//         state: "Karnataka"
+//       },
+//       {
+//         _id: "3",
+//         createdAt: "2025-11-07T09:15:00Z",
+//         name: "Rahul Kumar",
+//         email: "rahul.k@example.com",
+//         whatsappNumber: "+91 9876543212",
+//         q7_preferredDomain: "Mobile Development",
+//         city: "Delhi",
+//         state: "Delhi"
+//       }
+//     ];
+
+//     setTimeout(() => {
+//       setClients(mockClients);
+//       setLoading(false);
+//     }, 1000);
+//   }, []);
+
+//   if (loading)
+//     return (
+//       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 flex items-center justify-center p-4">
+//         <div className="text-center">
+//           <div className="relative inline-block">
+//             <div className="w-20 h-20 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+//             <div
+//               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 border-4 border-green-500/30 border-b-green-500 rounded-full animate-spin"
+//               style={{
+//                 animationDirection: "reverse",
+//                 animationDuration: "0.8s",
+//               }}
+//             ></div>
+//           </div>
+//           <p className="mt-6 text-white/80 font-semibold text-lg tracking-wide">
+//             Loading clients...
+//           </p>
+//         </div>
+//       </div>
+//     );
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+//       {/* Background Orbs */}
+//       <div className="fixed inset-0 pointer-events-none">
+//         <div className="absolute top-20 left-10 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
+//         <div
+//           className="absolute bottom-20 right-10 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse"
+//           style={{ animationDelay: "1s" }}
+//         ></div>
+//       </div>
+
+//       {/* Header */}
+//       <div className="relative mb-10">
+//         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
+//           Admin Client List
+//         </h1>
+//         <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">
+//           View all client registrations and their details
+//         </p>
+//       </div>
+
+//       {/* Responsive Table Container */}
+//       <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+//         {/* Desktop Table View */}
+//         <div className="hidden lg:block overflow-x-auto">
+//           <table className="min-w-full">
+//             <thead>
+//               <tr className="bg-gradient-to-r from-emerald-600/20 to-teal-600/20 backdrop-blur-sm">
+//                 <th className="px-6 py-5 text-left text-sm font-bold text-white">
+//                   Date
+//                 </th>
+//                 <th className="px-6 py-5 text-left text-sm font-bold text-white">
+//                   Name
+//                 </th>
+//                 <th className="px-6 py-5 text-left text-sm font-bold text-white">
+//                   Email
+//                 </th>
+//                 <th className="px-6 py-5 text-left text-sm font-bold text-white">
+//                   WhatsApp
+//                 </th>
+//                 <th className="px-6 py-5 text-left text-sm font-bold text-white">
+//                   Course
+//                 </th>
+//                 <th className="px-6 py-5 text-left text-sm font-bold text-white">
+//                   Location
+//                 </th>
+//               </tr>
+//             </thead>
+
+//             <tbody className="divide-y divide-white/10">
+//               {clients.length > 0 ? (
+//                 clients.map((client) => (
+//                   <motion.tr
+//                     key={client._id}
+//                     initial={{ opacity: 0 }}
+//                     animate={{ opacity: 1 }}
+//                     className="hover:bg-white/5 transition-all duration-300"
+//                   >
+//                     <td className="px-6 py-4 text-sm text-white/80 font-medium">
+//                       <div className="flex items-center gap-2">
+//                         <Calendar className="w-4 h-4 text-emerald-300" />
+//                         {client.createdAt
+//                           ? new Date(client.createdAt).toLocaleDateString("en-IN")
+//                           : "—"}
+//                       </div>
+//                     </td>
+
+//                     <td className="px-6 py-4 font-bold text-white">
+//                       <div className="flex items-center gap-2">
+//                         <User className="w-4 h-4 text-emerald-300" />
+//                         {client.name}
+//                       </div>
+//                     </td>
+
+//                     <td className="px-6 py-4 text-sm text-white/80">
+//                       <div className="flex items-center gap-2">
+//                         <Mail className="w-4 h-4 text-emerald-300" />
+//                         {client.email}
+//                       </div>
+//                     </td>
+
+//                     <td className="px-6 py-4 text-sm text-white/80">
+//                       <div className="flex items-center gap-2">
+//                         <Phone className="w-4 h-4 text-emerald-300" />
+//                         {client.whatsappNumber || "—"}
+//                       </div>
+//                     </td>
+
+//                     <td className="px-6 py-4 text-sm text-white/80">
+//                       <div className="flex items-center gap-2">
+//                         <BookOpen className="w-4 h-4 text-emerald-300" />
+//                         {client.q7_preferredDomain || "—"}
+//                       </div>
+//                     </td>
+
+//                     <td className="px-6 py-4 text-sm text-white/80">
+//                       <div className="flex items-center gap-2">
+//                         <MapPin className="w-4 h-4 text-emerald-300" />
+//                         {client.city}, {client.state}
+//                       </div>
+//                     </td>
+//                   </motion.tr>
+//                 ))
+//               ) : (
+//                 <tr>
+//                   <td colSpan={6} className="p-12 text-center">
+//                     <div className="w-20 h-20 bg-white/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+//                       <User className="w-10 h-10 text-white/60" />
+//                     </div>
+//                     <p className="text-white/60 text-lg">No clients found</p>
+//                   </td>
+//                 </tr>
+//               )}
+//             </tbody>
+//           </table>
+//         </div>
+
+//         {/* Mobile/Tablet Table View */}
+//         <div className="lg:hidden overflow-x-auto">
+//           <table className="min-w-full text-sm">
+//             <thead>
+//               <tr className="bg-gradient-to-r from-emerald-600/20 to-teal-600/20 backdrop-blur-sm">
+//                 <th className="px-3 py-3 text-left text-xs font-bold text-white">
+//                   Date
+//                 </th>
+//                 <th className="px-3 py-3 text-left text-xs font-bold text-white">
+//                   Name
+//                 </th>
+//                 <th className="px-3 py-3 text-left text-xs font-bold text-white">
+//                   Contact
+//                 </th>
+//                 <th className="px-3 py-3 text-left text-xs font-bold text-white">
+//                   Details
+//                 </th>
+//               </tr>
+//             </thead>
+
+//             <tbody className="divide-y divide-white/10">
+//               {clients.length > 0 ? (
+//                 clients.map((client) => (
+//                   <motion.tr
+//                     key={client._id}
+//                     initial={{ opacity: 0 }}
+//                     animate={{ opacity: 1 }}
+//                     className="hover:bg-white/5 transition-all duration-300"
+//                   >
+//                     <td className="px-3 py-3 text-xs text-white/80">
+//                       <div className="flex items-center gap-1">
+//                         <Calendar className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+//                         <span className="whitespace-nowrap">
+//                           {client.createdAt
+//                             ? new Date(client.createdAt).toLocaleDateString("en-IN", {
+//                                 day: "2-digit",
+//                                 month: "short"
+//                               })
+//                             : "—"}
+//                         </span>
+//                       </div>
+//                     </td>
+
+//                     <td className="px-3 py-3 text-white">
+//                       <div className="flex items-center gap-1">
+//                         <User className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+//                         <span className="font-semibold text-xs truncate max-w-[100px]">
+//                           {client.name}
+//                         </span>
+//                       </div>
+//                     </td>
+
+//                     <td className="px-3 py-3 text-xs text-white/80">
+//                       <div className="space-y-1">
+//                         <div className="flex items-center gap-1">
+//                           <Mail className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+//                           <span className="truncate max-w-[120px]">{client.email}</span>
+//                         </div>
+//                         <div className="flex items-center gap-1">
+//                           <Phone className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+//                           <span className="whitespace-nowrap">{client.whatsappNumber || "—"}</span>
+//                         </div>
+//                       </div>
+//                     </td>
+
+//                     <td className="px-3 py-3 text-xs text-white/80">
+//                       <div className="space-y-1">
+//                         <div className="flex items-center gap-1">
+//                           <BookOpen className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+//                           <span className="truncate max-w-[100px]">
+//                             {client.q7_preferredDomain || "—"}
+//                           </span>
+//                         </div>
+//                         <div className="flex items-center gap-1">
+//                           <MapPin className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+//                           <span className="truncate max-w-[100px]">
+//                             {client.city}, {client.state}
+//                           </span>
+//                         </div>
+//                       </div>
+//                     </td>
+//                   </motion.tr>
+//                 ))
+//               ) : (
+//                 <tr>
+//                   <td colSpan={4} className="p-8 text-center">
+//                     <div className="w-16 h-16 bg-white/10 rounded-full mx-auto mb-3 flex items-center justify-center">
+//                       <User className="w-8 h-8 text-white/60" />
+//                     </div>
+//                     <p className="text-white/60 text-sm">No clients found</p>
+//                   </td>
+//                 </tr>
+//               )}
+//             </tbody>
+//           </table>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

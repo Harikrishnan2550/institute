@@ -15,7 +15,7 @@ const Layout = ({ children }) => {
 
       {/* Main content area */}
       <div className="flex-1 md:ml-64 lg:ml-72 transition-all duration-300">
-        <main className="p-4 sm:p-6 lg:p-8 mt-[60px] sm:mt-[64px] overflow-x-auto">
+        <main className=" mt-[60px] sm:mt-[64px] overflow-x-auto">
           <div className="min-w-max">
             {children}
           </div>
