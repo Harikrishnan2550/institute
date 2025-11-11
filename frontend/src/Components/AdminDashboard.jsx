@@ -618,7 +618,7 @@ export default function AdminDashboard() {
       {/* Header with Search + Add Agent */}
       <div className="relative mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent mt-5">
             Admin Dashboard
           </h1>
           <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">

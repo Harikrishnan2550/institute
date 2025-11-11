@@ -256,7 +256,7 @@ export default function PartnerDashboard() {
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
           </div>
           <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
+            <h1 className="mt-8 text-3xl sm:text-4xl lg:text-6xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
               Welcome Back, Partner
             </h1>
             <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">
