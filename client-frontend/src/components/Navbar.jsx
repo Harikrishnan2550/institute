@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../api/axios";
+import assets from "../assets/assests";
 
 function Navbar() {
   const [partnerLogo, setPartnerLogo] = useState(null);
@@ -13,7 +14,9 @@ function Navbar() {
 
     const fetchLogo = async () => {
       try {
-        const res = await axiosInstance.get(`/api/partners/public/logo/${agentId}`);
+        const res = await axiosInstance.get(
+          `/api/partners/public/logo/${agentId}`
+        );
         console.log("🧠 Partner logo fetched:", res.data);
 
         // ✅ Fix logo URL depending on environment
@@ -54,8 +57,12 @@ function Navbar() {
             <p className="text-xs sm:text-sm text-gray-500 font-medium mb-1">
               Partnered with
             </p>
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 tracking-wide">
-              BSOFT
+            <h1 className="font-bold text-gray-800 tracking-wide">
+              <img
+                src={assets.Logo}
+                alt="Logo"
+                className="w-24 sm:w-28 md:w-32 lg:w-28 object-contain"
+              />
             </h1>
           </div>
         </div>
@@ -65,8 +72,6 @@ function Navbar() {
 }
 
 export default Navbar;
-
-
 
 // import React, { useEffect, useState } from "react";
 // import axiosInstance from "../api/axios";
@@ -157,5 +162,3 @@ export default Navbar;
 //     </nav>
 //   );
 // }
-
-

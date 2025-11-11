@@ -909,8 +909,6 @@
 //   );
 // }
 
-
-
 // src/pages/Home.jsx
 import React, { useState, useEffect } from "react";
 import GetStarted from "../components/GetStarted"; // 👈 new import
@@ -929,7 +927,6 @@ export default function Home() {
       title: "Personal 1-on-1 Career Guidance",
       description:
         "Your career, your direction — get personalized mentoring to choose the right IT path.",
-      
     },
     {
       number: 2,
@@ -972,8 +969,9 @@ export default function Home() {
           <div className="inline-block mb-4 animate-bounce-slow">
             <span className="text-7xl">🎓</span>
           </div>
-          <h1 className="text-xl md:text-5xl font-extrabold mb-4 drop-shadow-lg bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent bg-[length:200%_auto]">
-            Discover your strengths, choose the right course, and get guided toward your dream IT role.
+          <h1 className="text-xl md:text-5xl font-extrabold mb-6 leading-snug drop-shadow-lg bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent bg-[length:200%_auto] overflow-visible">
+            Discover Your Strengths, Choose The Right Course, And Get Guided
+            Toward Your Dream IT Role.
           </h1>
         </div>
 
