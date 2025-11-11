@@ -747,7 +747,7 @@ export default function AdminWallet() {
       {/* Header with Search */}
       <div className="relative mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
+          <h1 className="mt-8 text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
             Wallet Management
           </h1>
           <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">

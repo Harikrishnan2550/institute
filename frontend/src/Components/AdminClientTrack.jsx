@@ -126,7 +126,7 @@ const AdminClientTrack = () => {
       {/* Header */}
       <div className="relative mb-10 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
+          <h1 className="mt-5 overflow-visible leading-snug text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
             Client Tracking
           </h1>
           <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">
@@ -227,15 +227,15 @@ const AdminClientTrack = () => {
                         disabled={updatingId === client._id}
                         className={`px-3 py-2 rounded-lg text-sm border-2 focus:outline-none ${
                           client.connectionStatus === "Connected"
-                            ? "bg-emerald-500/20 border-emerald-400 text-emerald-300"
-                            : "bg-red-500/20 border-red-400 text-red-300"
+                            ? "bg-emerald-500/80 border-emerald-400 text-white"
+                            : "bg-red-500/80 border-red-400 text-white"
                         }`}
                       >
                         <option value="Connected">Connected</option>
                         <option value="Not Connected">Not Connected</option>
                       </select>
                       {updatingId === client._id && (
-                        <RefreshCw className="w-4 h-4 text-emerald-300 animate-spin inline-block ml-2" />
+                        <RefreshCw className="w-4 h-4 text-white animate-spin inline-block ml-2" />
                       )}
                     </td>
 

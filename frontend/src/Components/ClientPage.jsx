@@ -1052,7 +1052,6 @@ const ClientStatusTable = () => {
               }}
             >
               <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-lime-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-2xl">
-                <span className="text-5xl">Empty mailbox</span>
               </div>
               <Typography variant="h5" color="white" fontWeight="bold">
                 No clients found
