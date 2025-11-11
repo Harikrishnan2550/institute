@@ -112,6 +112,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import mongoose from "mongoose"; // ✅ Added for cache control
 import connectDB from "./config/Mongodb.js";
 
 import CarrerFormRoutes from "./Routes/CarrerFormRoutes.js";
@@ -169,7 +170,7 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// ✅ Serve the uploads folder properly (fix for Render)
+// ✅ Serve uploads properly (for Render + local)
 const uploadsPath = path.resolve(__dirname, "uploads");
 app.use("/uploads", express.static(uploadsPath));
 console.log("🖼️ Serving static files from:", uploadsPath);
@@ -178,6 +179,26 @@ console.log("🖼️ Serving static files from:", uploadsPath);
    ✅ MongoDB Connection
 ---------------------------------------------------- */
 connectDB();
+
+// 🧠 Auto model cache cleaner (fix old schema issue)
+mongoose.connection.once("open", async () => {
+  try {
+    console.log("🧹 Clearing Mongoose model cache...");
+    delete mongoose.models["CareerForm"];
+    delete mongoose.connection.models["CareerForm"];
+    console.log("✅ CareerForm model cache cleared successfully!");
+  } catch (err) {
+    console.log("⚠️ Error clearing model cache:", err.message);
+  }
+});
+
+/* ----------------------------------------------------
+   ✅ Log all requests for debugging
+---------------------------------------------------- */
+app.use((req, res, next) => {
+  console.log(`📨 ${req.method} request to ${req.url}`);
+  next();
+});
 
 /* ----------------------------------------------------
    ✅ Routes
@@ -211,5 +232,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`✅ Server is running on port ${port}`);
 });
-
-

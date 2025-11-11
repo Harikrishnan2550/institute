@@ -179,7 +179,7 @@ export default function PartnerDashboard() {
         }
 
         if (agentId) {
-          setPartnerLink(`http://localhost:5174/?agentId=${agentId}`);
+          setPartnerLink(`http://localhost:5173/?agentId=${agentId}`);
         }
 
         const res = await axiosInstance.get("/api/wallet/my-wallet", {

@@ -600,8 +600,6 @@
 //   );
 // }
 
-
-
 // src/components/GetStarted.jsx
 // import React, { useState, useEffect } from "react";
 // import { motion, AnimatePresence } from "framer-motion";
@@ -1030,8 +1028,6 @@
 //   );
 // }
 
-
-
 // src/components/GetStarted.jsx
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1127,14 +1123,13 @@ export default function GetStarted() {
     // ✅ Validation before next
     const currentQ = qustions[currentStep - 1];
     if (currentStep <= qustions.length) {
-      if (
-        currentStep === 7 &&
-        SubCourses[selectedOptions[7]] &&
-        !selectedOptions.subCourse
-      ) {
-        alert("Please select a subcourse before proceeding.");
-        return;
-      }
+      if (currentStep === 7) {
+  const hasSubcourses = SubCourses[selectedOptions[7]];
+  if (hasSubcourses && !selectedOptions.subCourse) {
+    alert("Please select a subcourse before proceeding.");
+    return;
+  }
+}
 
       if (
         (currentQ.type === "input" &&
@@ -1216,10 +1211,13 @@ export default function GetStarted() {
       {/* Header */}
       <div className="text-center mb-10">
         <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          Career Guidance – IT Course Recommendation Form
+          Choose Your IT Career Path with Bsoft Education
         </h2>
-        <p className="text-lg text-gray-600">
-          Answer a few questions to receive personalized recommendations
+        <p className="text-lg text-gray-600 mt-8">
+          At Bsoft Education, we make your career path selection simple and
+          clear. If you’re unsure where to start in IT or confused about which
+          course suits your interests, we’ve created a platform
+          designed just for you.
         </p>
       </div>
 

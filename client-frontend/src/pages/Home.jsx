@@ -926,29 +926,28 @@ export default function Home() {
   const processSteps = [
     {
       number: 1,
-      title: "Questionnaire or Video Session",
+      title: "Personal 1-on-1 Career Guidance",
       description:
-        "Questionnaire: Fill accurate details based on your interest and background.",
-      description2:
-        "Video Session: Mentor will help you in clarification and deep understanding of your interest and background.",
+        "Your career, your direction — get personalized mentoring to choose the right IT path.",
+      
     },
     {
       number: 2,
-      title: "Finding Suitable Online/Distance University",
+      title: "Online & Offline Training",
       description:
-        "Based on your answer, our mentors and research team will find the best and suitable online/distance university for the candidate.",
+        "Learn anywhere, anytime — with real labs, hands-on projects, and expert trainers.",
     },
     {
       number: 3,
-      title: "Online/Distance University Suggestions",
+      title: "Placement Support",
       description:
-        "Mentors will get in touch with the candidate regarding the best and suitable online/distance university. Will discuss the pros and cons of the options which the candidate has, and will be submitting a report to the candidate.",
+        "From learning to landing your dream job — we guide you every step of the way.",
     },
     {
       number: 4,
-      title: "University Registration",
+      title: "Access to Our Community",
       description:
-        "Based on the report candidates will be able to select the best and suitable online/distance university for them. Then comes Online/Distance University Registration.",
+        "Connect. Upskill. Grow. Join our network of professionals and stay ahead in your career.",
     },
   ];
 
@@ -973,8 +972,8 @@ export default function Home() {
           <div className="inline-block mb-4 animate-bounce-slow">
             <span className="text-7xl">🎓</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent bg-[length:200%_auto]">
-            Online & Distance University Selection Made Easy
+          <h1 className="text-xl md:text-5xl font-extrabold mb-4 drop-shadow-lg bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent bg-[length:200%_auto]">
+            Discover your strengths, choose the right course, and get guided toward your dream IT role.
           </h1>
         </div>
 
@@ -989,7 +988,7 @@ export default function Home() {
               How It Works
             </h2>
             <p className="text-xl text-gray-600 animate-slide-in-right">
-              Simple, guided process to find your ideal educational path
+              From Beginner to Professional — We Guide Every Step.
             </p>
           </div>
 

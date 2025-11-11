@@ -3,18 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import {
-  Calendar,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  BookOpen,
-  Eye,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Calendar, Eye, RefreshCw } from "lucide-react";
+import { Pagination, Box } from "@mui/material"; // ✅ MUI Pagination
 
 const AdminClientTrack = () => {
   const [clients, setClients] = useState([]);
@@ -39,13 +29,15 @@ const AdminClientTrack = () => {
         }
 
         setLoading(true);
-        const res = await axios.get(`${BASE}/all?page=${page}&limit=${limit}`, {
+        const res = await axios.get(`${BASE}?page=${page}&limit=${limit}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         setClients(Array.isArray(res.data) ? res.data : res.data.data || []);
         setTotalClients(
-          res.data.total || (Array.isArray(res.data) ? res.data.length : 0)
+          res.data.totalForms ||
+            res.data.total ||
+            (Array.isArray(res.data) ? res.data.length : 0)
         );
       } catch (err) {
         console.error("Error fetching clients:", err);
@@ -94,17 +86,11 @@ const AdminClientTrack = () => {
     }
   };
 
-  // 🟢 Pagination controls
+  // 🟢 Pagination logic
   const totalPages = Math.ceil(totalClients / limit);
+  const handlePageChange = (event, value) => setPage(value);
 
-  const handlePrevPage = () => {
-    if (page > 1) setPage((prev) => prev - 1);
-  };
-
-  const handleNextPage = () => {
-    if (page < totalPages) setPage((prev) => prev + 1);
-  };
-
+  // 🟢 Loading screen
   if (loading)
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 flex items-center justify-center p-4">
@@ -165,7 +151,7 @@ const AdminClientTrack = () => {
         </div>
       </div>
 
-      {/* Desktop Table */}
+      {/* Table */}
       <motion.div
         key={page}
         initial={{ opacity: 0, y: 15 }}
@@ -182,7 +168,7 @@ const AdminClientTrack = () => {
                   "Name",
                   "Email",
                   "WhatsApp",
-                  "Course",
+                  "Course (Domain + Subcourse)",
                   "Location",
                   "Status",
                   "Action",
@@ -217,12 +203,21 @@ const AdminClientTrack = () => {
                     <td className="px-6 py-4 text-white/80">
                       {client.whatsappNumber}
                     </td>
-                    <td className="px-6 py-4 text-white/80">
-                      {client.q7_preferredDomain || "—"}
+
+                    {/* ✅ Course: show merged field or fallback */}
+                    <td className="px-6 py-4 text-emerald-300 font-semibold">
+                      {client.q7_preferredDomain ||
+                        `${client.q7_preferredDomain || ""} ${
+                          client.q7_subCourse
+                            ? `(${client.q7_subCourse})`
+                            : ""
+                        }`}
                     </td>
+
                     <td className="px-6 py-4 text-white/80">
                       {client.city}, {client.state}
                     </td>
+
                     <td className="px-6 py-4">
                       <select
                         value={client.connectionStatus || "Not Connected"}
@@ -243,6 +238,7 @@ const AdminClientTrack = () => {
                         <RefreshCw className="w-4 h-4 text-emerald-300 animate-spin inline-block ml-2" />
                       )}
                     </td>
+
                     <td className="px-6 py-4">
                       <button
                         onClick={() => handleView(client)}
@@ -265,33 +261,39 @@ const AdminClientTrack = () => {
         </div>
       </motion.div>
 
-      {/* Pagination */}
+      {/* ✅ MUI Pagination */}
       {totalPages > 1 && (
-        <div className="mt-8 flex justify-center items-center gap-4">
-          <button
-            onClick={handlePrevPage}
-            disabled={page === 1}
-            className="flex items-center gap-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm font-semibold hover:bg-white/20 disabled:opacity-40"
-          >
-            <ChevronLeft size={18} /> Prev
-          </button>
-          <span className="text-white/80 text-sm font-medium">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            onClick={handleNextPage}
-            disabled={page === totalPages}
-            className="flex items-center gap-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm font-semibold hover:bg-white/20 disabled:opacity-40"
-          >
-            Next <ChevronRight size={18} />
-          </button>
-        </div>
+        <Box display="flex" justifyContent="center" mt={6}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            sx={{
+              "& .MuiPaginationItem-root": {
+                color: "white",
+                bgcolor: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                "&.Mui-selected": {
+                  background:
+                    "linear-gradient(135deg, #059669, #10b981) !important",
+                  color: "white",
+                  fontWeight: "bold",
+                },
+              },
+            }}
+          />
+        </Box>
       )}
     </div>
   );
 };
 
 export default AdminClientTrack;
+
+
 
 // import React, { useEffect, useState } from "react";
 // import { motion } from "framer-motion";
