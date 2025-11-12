@@ -1124,12 +1124,12 @@ export default function GetStarted() {
     const currentQ = qustions[currentStep - 1];
     if (currentStep <= qustions.length) {
       if (currentStep === 7) {
-  const hasSubcourses = SubCourses[selectedOptions[7]];
-  if (hasSubcourses && !selectedOptions.subCourse) {
-    alert("Please select a subcourse before proceeding.");
-    return;
-  }
-}
+        const hasSubcourses = SubCourses[selectedOptions[7]];
+        if (hasSubcourses && !selectedOptions.subCourse) {
+          alert("Please select a subcourse before proceeding.");
+          return;
+        }
+      }
 
       if (
         (currentQ.type === "input" &&
@@ -1215,34 +1215,57 @@ export default function GetStarted() {
         </h2>
         <p className="text-lg text-gray-600 mt-8">
           At Bsoft Education, we make your career path selection simple and
-          clear. If you’re unsure where to start in IT or confused about which
-          course suits your interests, we’ve created a platform
-          designed just for you.
+          clear. If you're unsure where to start in IT or confused about which
+          course suits your interests, we've created a platform
+          designed just for you.
         </p>
       </div>
 
       {/* Progress Bar */}
-      <div className="flex justify-center items-center gap-2 mb-12">
-        {[...Array(totalSteps)].map((_, index) => (
-          <React.Fragment key={index}>
-            <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold transition-all duration-500 ${
-                index + 1 <= currentStep
-                  ? "bg-gradient-to-br from-green-300 to-green-800 text-white scale-110 shadow-lg"
-                  : "bg-gray-200 text-gray-500 scale-90"
-              }`}
-            >
-              {index + 1}
-            </div>
-            {index < totalSteps - 1 && (
-              <div
-                className={`h-0.5 transition-all duration-500 ${
-                  index + 1 < currentStep ? "w-12 bg-black" : "w-6 bg-gray-200"
-                }`}
-              ></div>
-            )}
-          </React.Fragment>
-        ))}
+      <div className="flex justify-center items-center gap-2 mb-12 overflow-hidden relative px-4">
+        <div className="flex items-center gap-2">
+          <AnimatePresence mode="popLayout">
+            {[...Array(totalSteps)].map((_, index) => {
+              const stepNumber = index + 1;
+              const shouldShow =
+                stepNumber >= currentStep - 1 &&
+                stepNumber <= currentStep + 2;
+
+              if (!shouldShow) return null;
+
+              return (
+                <motion.div
+                  key={stepNumber}
+                  initial={{ opacity: 0, x: 50, scale: 0.8 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -50, scale: 0.8 }}
+                  transition={{ duration: 0.4, type: "spring", stiffness: 100 }}
+                  className="flex items-center gap-2"
+                >
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold transition-all duration-500 ${
+                      stepNumber <= currentStep
+                        ? "bg-gradient-to-br from-green-300 to-green-800 text-white scale-110 shadow-lg"
+                        : "bg-gray-200 text-gray-500 scale-90"
+                    }`}
+                  >
+                    {stepNumber}
+                  </div>
+                  {stepNumber < totalSteps &&
+                    stepNumber < currentStep + 2 && (
+                      <div
+                        className={`h-0.5 transition-all duration-500 ${
+                          stepNumber < currentStep
+                            ? "w-12 bg-black"
+                            : "w-6 bg-gray-200"
+                        }`}
+                      ></div>
+                    )}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Question or Form */}
