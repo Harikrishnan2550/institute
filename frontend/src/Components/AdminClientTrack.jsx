@@ -1,23 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { Calendar, Eye, RefreshCw } from "lucide-react";
-import { Pagination, Box } from "@mui/material"; // ✅ MUI Pagination
+import { Pagination, Box } from "@mui/material";
 
 const AdminClientTrack = () => {
   const [clients, setClients] = useState([]);
+  const [allClients, setAllClients] = useState([]); // for filtering
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalClients, setTotalClients] = useState(0);
+  const [selectedCourse, setSelectedCourse] = useState("All");
   const navigate = useNavigate();
 
   const BASE = "http://localhost:4000/api/carrer-form";
 
-  // 🟢 Fetch clients with pagination (Admin only)
+  // 🟢 Fetch clients (paginated for "All", full for filters)
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -29,32 +31,59 @@ const AdminClientTrack = () => {
         }
 
         setLoading(true);
-        const res = await axios.get(`${BASE}?page=${page}&limit=${limit}`, {
+
+        // 🆕 URL logic — only paginated for “All”
+        let url = BASE;
+        if (selectedCourse === "All") {
+          url = `${BASE}?page=${page}&limit=${limit}`;
+        }
+
+        const res = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setClients(Array.isArray(res.data) ? res.data : res.data.data || []);
-        setTotalClients(
-          res.data.totalForms ||
-            res.data.total ||
-            (Array.isArray(res.data) ? res.data.length : 0)
-        );
+        // 🆕 Unified handling for paginated + full response
+        const data = Array.isArray(res.data)
+          ? res.data
+          : res.data.data || [];
+
+        setClients(data);
+        if (selectedCourse === "All") {
+          setTotalClients(
+            res.data.totalForms ||
+              res.data.total ||
+              (Array.isArray(res.data) ? res.data.length : 0)
+          );
+        } else {
+          // When filtering, total count = all filtered students
+          setTotalClients(data.length);
+        }
       } catch (err) {
         console.error("Error fetching clients:", err);
-        if (err.response?.status === 401) {
-          toast.error("Session expired. Please login again.");
-          localStorage.removeItem("token");
-          navigate("/login");
-        } else {
-          toast.error("Failed to fetch clients");
-        }
+        toast.error("Failed to fetch clients");
       } finally {
         setLoading(false);
       }
     };
 
     fetchClients();
-  }, [page, limit, navigate]);
+  }, [page, limit, selectedCourse, navigate]);
+
+  // 🟢 Also fetch ALL clients once (for course dropdown)
+  useEffect(() => {
+    const fetchAllClients = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(BASE, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAllClients(Array.isArray(res.data) ? res.data : res.data.data || []);
+      } catch (err) {
+        console.error("Error fetching all clients:", err);
+      }
+    };
+    fetchAllClients();
+  }, []);
 
   // 🟢 Navigate to client details page
   const handleView = (client) => {
@@ -63,13 +92,7 @@ const AdminClientTrack = () => {
 
   // 🟢 Update connection status
   const handleStatusChange = async (clientId, newStatus) => {
-    setClients((prev) =>
-      prev.map((c) =>
-        c._id === clientId ? { ...c, connectionStatus: newStatus } : c
-      )
-    );
     setUpdatingId(clientId);
-
     try {
       const token = localStorage.getItem("token");
       await axios.put(
@@ -80,14 +103,37 @@ const AdminClientTrack = () => {
       toast.success("Status updated successfully");
     } catch (err) {
       console.error("Failed to update status:", err);
-      toast.error("Failed to update status. Please try again.");
+      toast.error("Failed to update status");
     } finally {
       setUpdatingId(null);
     }
   };
 
+  // 🟢 Unique courses for filter dropdown
+  const uniqueCourses = useMemo(() => {
+    const set = new Set(
+      allClients.map((c) => c.q7_preferredDomain).filter(Boolean)
+    );
+    return ["All", ...Array.from(set)];
+  }, [allClients]);
+
+  // 🟢 Filtered client data
+  const filteredClients =
+    selectedCourse === "All"
+      ? clients
+      : clients.filter(
+          (c) =>
+            c.q7_preferredDomain === selectedCourse ||
+            c.q7_subCourse === selectedCourse
+        );
+
+  // 🟢 Count for filtered course
+  const filteredCount =
+    selectedCourse === "All" ? allClients.length : filteredClients.length;
+
   // 🟢 Pagination logic
-  const totalPages = Math.ceil(totalClients / limit);
+  const totalPages =
+    selectedCourse === "All" ? Math.ceil(totalClients / limit) : 1;
   const handlePageChange = (event, value) => setPage(value);
 
   // 🟢 Loading screen
@@ -112,6 +158,7 @@ const AdminClientTrack = () => {
       </div>
     );
 
+  // 🧱 Main UI (unchanged)
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       {/* Background Orbs */}
@@ -132,28 +179,54 @@ const AdminClientTrack = () => {
           <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">
             Manage and track all client interactions
           </p>
+
+          <p className="text-emerald-400 mt-2 font-semibold">
+            {selectedCourse === "All"
+              ? `Total Students: ${filteredCount}`
+              : `${filteredCount} students interested in ${selectedCourse}`}
+          </p>
         </div>
 
-        {/* Limit Selector */}
-        <div className="flex items-center gap-2">
-          <label className="text-white/70 text-sm font-medium">Rows:</label>
+        {/* Filter + Rows */}
+        <div className="flex items-center gap-2 mr-[300px]">
+          <label className="text-white/70 text-sm font-medium">
+            Filter by Course:
+          </label>
           <select
-            value={limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
+            value={selectedCourse}
+            onChange={(e) => {
+              setSelectedCourse(e.target.value);
+              setPage(1);
+            }}
             className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
           >
-            {[10, 20, 50].map((size) => (
-              <option key={size} value={size} className="text-black">
-                {size}
+            {uniqueCourses.map((course) => (
+              <option key={course} value={course} className="text-black">
+                {course}
               </option>
             ))}
           </select>
+
+          <div className="flex items-center gap-2 ml-4">
+            <label className="text-white/70 text-sm font-medium">Rows:</label>
+            <select
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
+            >
+              {[10, 20, 50].map((size) => (
+                <option key={size} value={size} className="text-black">
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Table */}
       <motion.div
-        key={page}
+        key={page + selectedCourse}
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -182,10 +255,9 @@ const AdminClientTrack = () => {
                 ))}
               </tr>
             </thead>
-
             <tbody className="divide-y divide-white/10">
-              {clients.length > 0 ? (
-                clients.map((client) => (
+              {filteredClients.length > 0 ? (
+                filteredClients.map((client) => (
                   <motion.tr
                     key={client._id}
                     initial={{ opacity: 0 }}
@@ -203,21 +275,13 @@ const AdminClientTrack = () => {
                     <td className="px-6 py-4 text-white/80">
                       {client.whatsappNumber}
                     </td>
-
-                    {/* ✅ Course: show merged field or fallback */}
                     <td className="px-6 py-4 text-emerald-300 font-semibold">
-                      {client.q7_preferredDomain ||
-                        `${client.q7_preferredDomain || ""} ${
-                          client.q7_subCourse
-                            ? `(${client.q7_subCourse})`
-                            : ""
-                        }`}
+                      {client.q7_preferredDomain}{" "}
+                      {client.q7_subCourse ? `(${client.q7_subCourse})` : ""}
                     </td>
-
                     <td className="px-6 py-4 text-white/80">
                       {client.city}, {client.state}
                     </td>
-
                     <td className="px-6 py-4">
                       <select
                         value={client.connectionStatus || "Not Connected"}
@@ -238,7 +302,6 @@ const AdminClientTrack = () => {
                         <RefreshCw className="w-4 h-4 text-white animate-spin inline-block ml-2" />
                       )}
                     </td>
-
                     <td className="px-6 py-4">
                       <button
                         onClick={() => handleView(client)}
@@ -261,8 +324,8 @@ const AdminClientTrack = () => {
         </div>
       </motion.div>
 
-      {/* ✅ MUI Pagination */}
-      {totalPages > 1 && (
+      {/* Pagination */}
+      {selectedCourse === "All" && totalPages > 1 && (
         <Box display="flex" justifyContent="center" mt={6}>
           <Pagination
             count={totalPages}
@@ -292,6 +355,8 @@ const AdminClientTrack = () => {
 };
 
 export default AdminClientTrack;
+
+     
 
 
 

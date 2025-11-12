@@ -424,60 +424,60 @@ export const submitCareerForm = async (req, res) => {
 };
 
 
-
-
-
 // 🟢 Get all forms (Admin & Partner) — with pagination
+// 🟢 Get all forms (Admin & Partner) — smart pagination
 export const getAllForms = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const page = req.query.page ? parseInt(req.query.page) : null;
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
 
-    console.log("📨 GET request to /api/carrer-form?page=" + page + "&limit=" + limit);
+    console.log("📨 GET /api/carrer-form", req.query);
 
-    const totalForms = await CareerForm.countDocuments();
-    console.log("📊 Total forms in DB:", totalForms);
+    let forms;
 
-    const forms = await CareerForm.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    if (page && limit) {
+      // ✅ Use pagination only if query params exist
+      const skip = (page - 1) * limit;
+      const totalForms = await CareerForm.countDocuments();
 
-    console.log("📋 Forms fetched on this page:", forms.length);
-    if (forms.length > 0) {
-      console.log("🧾 Sample form:", {
-        name: forms[0].name,
-        q7_preferredDomain: forms[0].q7_preferredDomain,
-        q7_subCourse: forms[0].q7_subCourse,
-      });
-    }
+      forms = await CareerForm.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
 
-    if (!forms || forms.length === 0) {
+      const formattedForms = forms.map((form) => ({
+        ...form._doc,
+        createdAt: formatIST(form.createdAt),
+        updatedAt: formatIST(form.updatedAt),
+      }));
+
       return res.status(200).json({
         success: true,
-        message: "No forms found",
-        data: [],
+        message: "Forms fetched successfully (paginated)",
+        data: formattedForms,
         currentPage: page,
-        totalPages: 0,
-        totalForms: 0,
+        totalPages: Math.ceil(totalForms / limit),
+        totalForms,
+      });
+    } else {
+      // ✅ No pagination — return ALL students
+      forms = await CareerForm.find().sort({ createdAt: -1 });
+
+      const formattedForms = forms.map((form) => ({
+        ...form._doc,
+        createdAt: formatIST(form.createdAt),
+        updatedAt: formatIST(form.updatedAt),
+      }));
+
+      console.log("📦 Returning all forms:", formattedForms.length);
+
+      return res.status(200).json({
+        success: true,
+        message: "All forms fetched successfully (no pagination)",
+        data: formattedForms,
+        totalForms: formattedForms.length,
       });
     }
-
-    const formattedForms = forms.map((form) => ({
-      ...form._doc,
-      createdAt: formatIST(form.createdAt),
-      updatedAt: formatIST(form.updatedAt),
-    }));
-
-    res.status(200).json({
-      success: true,
-      message: "Forms fetched successfully",
-      data: formattedForms,
-      currentPage: page,
-      totalPages: Math.ceil(totalForms / limit),
-      totalForms,
-    });
   } catch (error) {
     console.error("❌ Error fetching forms:", error);
     res.status(500).json({
@@ -487,6 +487,7 @@ export const getAllForms = async (req, res) => {
     });
   }
 };
+
 
 
 // 🟢 Get all clients by agent (Partner dashboard)
