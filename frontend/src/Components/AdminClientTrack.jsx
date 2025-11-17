@@ -19,6 +19,30 @@ const AdminClientTrack = () => {
 
   const BASE = "http://localhost:4000/api/carrer-form";
 
+  // helper: try to parse date; if invalid, return original value
+  const formatDateSafely = (value) => {
+    if (!value) return "—";
+    // If it's already a readable string (contains letters like "AM" or "-" or "/")
+    // we assume backend already formatted it and return as-is.
+    // Otherwise try to parse as Date.
+    const likelyFormatted =
+      typeof value === "string" &&
+      (/[AP]M|am|pm/.test(value) || /[a-zA-Z]{3,}/.test(value) || /\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/.test(value));
+
+    if (likelyFormatted) return value;
+
+    const d = new Date(value);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    }
+    // fallback: return original
+    return value;
+  };
+
   // 🟢 Fetch clients (paginated for "All", full for filters)
   useEffect(() => {
     const fetchClients = async () => {
@@ -32,7 +56,6 @@ const AdminClientTrack = () => {
 
         setLoading(true);
 
-        // 🆕 URL logic — only paginated for “All”
         let url = BASE;
         if (selectedCourse === "All") {
           url = `${BASE}?page=${page}&limit=${limit}`;
@@ -42,10 +65,8 @@ const AdminClientTrack = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // 🆕 Unified handling for paginated + full response
-        const data = Array.isArray(res.data)
-          ? res.data
-          : res.data.data || [];
+        // unified handling for paginated + full response
+        const data = Array.isArray(res.data) ? res.data : res.data.data || [];
 
         setClients(data);
         if (selectedCourse === "All") {
@@ -55,7 +76,6 @@ const AdminClientTrack = () => {
               (Array.isArray(res.data) ? res.data.length : 0)
           );
         } else {
-          // When filtering, total count = all filtered students
           setTotalClients(data.length);
         }
       } catch (err) {
@@ -101,6 +121,11 @@ const AdminClientTrack = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success("Status updated successfully");
+      // refresh current page of clients after update
+      // (optional) you can re-fetch or update local state
+      setClients((prev) =>
+        prev.map((c) => (c._id === clientId ? { ...c, connectionStatus: newStatus } : c))
+      );
     } catch (err) {
       console.error("Failed to update status:", err);
       toast.error("Failed to update status");
@@ -266,7 +291,7 @@ const AdminClientTrack = () => {
                   >
                     <td className="px-6 py-4 text-sm text-white/80 font-medium">
                       <Calendar className="w-4 h-4 text-emerald-300 inline-block mr-2" />
-                      {new Date(client.createdAt).toLocaleDateString("en-IN")}
+                      {formatDateSafely(client.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-white font-semibold">
                       {client.name}
@@ -355,9 +380,6 @@ const AdminClientTrack = () => {
 };
 
 export default AdminClientTrack;
-
-     
-
 
 
 // import React, { useEffect, useState } from "react";

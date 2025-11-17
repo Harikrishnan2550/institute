@@ -1070,83 +1070,101 @@ export default function GetStarted() {
 
   // ✅ Handle Next / Submit
   const handleNext = async () => {
-    // 🔥 Always capture latest subcourse directly from DOM (100% accurate)
-    const subcourseFromDOM = document.querySelector("#subcourse-select")?.value;
+  // 🔥 Always read latest subcourse directly from DOM
+  const subcourseFromDOM = document.querySelector("#subcourse-select")?.value;
 
-    if (currentStep === totalSteps) {
-      // 🔥 Merge preferred domain + subcourse for backend
-      let mergedCourse = selectedOptions[7] || "";
-      const finalSubcourse =
-        subcourseFromDOM || selectedOptions.subCourse || "";
+  // ---- FINAL SUBMISSION ---- //
+  if (currentStep === totalSteps) {
+    setLoading(true);
 
-      if (finalSubcourse !== "") {
-        mergedCourse = `${selectedOptions[7]} (${finalSubcourse})`;
-      }
+    // 🔥 Guarantee correct subcourse (React state OR DOM)
+    const finalSubcourse =
+      selectedOptions.subCourse || subcourseFromDOM || "";
 
-      const payload = {
-        q1_experienceLevel: selectedOptions[1],
-        q2_previousITExperience: selectedOptions[2],
-        q2_previousRole: selectedOptions.role || "",
-        q3_education: selectedOptions[3],
-        q4_yearOfPassing: selectedOptions[4],
-        q5_interestArea: selectedOptions[5],
-        q6_jobAwareness: selectedOptions[6],
+    // 🔥 Merge Domain + Subcourse into “Course (Subcourse)” format
+    const mergedCourse =
+      selectedOptions[7] && finalSubcourse
+        ? `${selectedOptions[7]} (${finalSubcourse})`
+        : selectedOptions[7] || "";
 
-        // 🔥 Send merged course
-        q7_preferredDomain: mergedCourse,
+    const payload = {
+      q1_experienceLevel: selectedOptions[1],
+      q2_previousITExperience: selectedOptions[2],
+      q2_previousRole: selectedOptions.role || "",
+      q3_education: selectedOptions[3],
+      q4_yearOfPassing: selectedOptions[4],
+      q5_interestArea: selectedOptions[5],
+      q6_jobAwareness: selectedOptions[6],
 
-        q8_careerGoal: selectedOptions[8],
-        q9_trainingTime: selectedOptions[9],
-        q10_guidanceCall: selectedOptions[10],
+      q7_preferredDomain: mergedCourse, // 🔥 FIXED
 
-        // Personal details
-        name: personalDetails.name,
-        email: personalDetails.email,
-        whatsappNumber: personalDetails.whatsapp,
-        alternativeNumber: personalDetails.alternate,
-        state: personalDetails.state,
-        city: personalDetails.city,
-        language: personalDetails.language,
-        agentId,
-      };
+      q8_careerGoal: selectedOptions[8],
+      q9_trainingTime: selectedOptions[9],
+      q10_guidanceCall: selectedOptions[10],
 
-      console.log("📦 FINAL payload submitted:", payload);
+      name: personalDetails.name,
+      email: personalDetails.email,
+      whatsappNumber: personalDetails.whatsapp,
+      alternativeNumber: personalDetails.alternate,
+      state: personalDetails.state,
+      city: personalDetails.city,
+      language: personalDetails.language,
+      agentId,
+    };
 
-      try {
-        setLoading(true);
-        const testAgent = agentId || "AGT-0009";
-        const endpoint = `/api/carrer-form/submit?agentId=${testAgent}`;
+    console.log("📦 FINAL PAYLOAD:", payload);
 
-        const res = await axiosInstance.post(endpoint, payload);
+    try {
+      const testAgent = agentId || "AGT-0009";
+      const endpoint = `/api/carrer-form/submit?agentId=${testAgent}`;
+      const res = await axiosInstance.post(endpoint, payload);
+      console.log("✅ Form submitted:", res.data);
 
-        console.log("✅ Submitted Successfully:", res.data);
-
-        setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 4000);
-      } catch (error) {
-        console.error("❌ Submission failed:", error);
-        alert(
-          error?.response?.data?.message || "Submission failed. Try again."
-        );
-      } finally {
-        setLoading(false);
-      }
-
-      return;
+      setShowPopup(true);
+      setTimeout(() => setShowPopup(false), 4000);
+    } catch (error) {
+      console.error("❌ Submission failed:", error);
+      alert(error?.response?.data?.message || "Submission failed.");
+    } finally {
+      setLoading(false);
     }
 
-    // ⛔ Step 7 validation
+    return;
+  }
+
+  // ---- VALIDATION BEFORE GOING NEXT ---- //
+  const currentQ = qustions[currentStep - 1];
+
+  if (currentStep <= qustions.length) {
+    // 🔥 Step 7 (Domain + Subcourse)
     if (currentStep === 7) {
-      const finalSubcourse =
-        subcourseFromDOM || selectedOptions.subCourse || "";
-      if (SubCourses[selectedOptions[7]] && finalSubcourse === "") {
+      const domain = selectedOptions[7];
+      const finalSub = selectedOptions.subCourse || subcourseFromDOM;
+
+      if (SubCourses[domain] && (!finalSub || finalSub === "")) {
         alert("Please select a subcourse before proceeding.");
         return;
       }
     }
 
-    setCurrentStep((prev) => prev + 1);
-  };
+    // 🔥 Normal validation
+    if (
+      (currentQ.type === "input" &&
+        (!selectedOptions[currentStep] ||
+          selectedOptions[currentStep].trim() === "")) ||
+      (currentQ.type === "button" &&
+        !selectedOptions[currentStep] &&
+        currentQ.id !== 2)
+    ) {
+      alert("Please complete this question.");
+      return;
+    }
+  }
+
+  // NEXT STEP
+  setCurrentStep((prev) => prev + 1);
+};
+
 
   const previousStep = () => {
     if (currentStep > 1) setCurrentStep((prev) => prev - 1);
@@ -1305,11 +1323,11 @@ export default function GetStarted() {
                           : "bg-white border-gray-200 text-gray-700 hover:border-green-500 hover:bg-gray-50"
                       }`}
                       onClick={() =>
-                        setSelectedOptions({
-                          ...selectedOptions,
-                          [currentStep]: option,
-                          subCourse: "",
-                        })
+                        setSelectedOptions((prev) => ({
+                                     ...prev,
+                            [currentStep]: option,
+                                    }))
+
                       }
                     >
                       {option}

@@ -359,8 +359,6 @@
 //   }
 // };
 
-
-
 console.log("🧩 Using Controller File: CarrerFormController.js (ACTIVE)");
 
 import CareerForm from "../Models/CarrerFormModel.js";
@@ -390,8 +388,7 @@ export const submitCareerForm = async (req, res) => {
     }
 
     // ✅ Merge course + subcourse properly
-const mergedCourse = formData.q7_preferredDomain;
-
+    const mergedCourse = formData.q7_preferredDomain;
 
     // ✅ Prepare data for DB
     const completeData = {
@@ -420,7 +417,6 @@ const mergedCourse = formData.q7_preferredDomain;
     });
   }
 };
-
 
 // 🟢 Get all forms (Admin & Partner) — with pagination
 // 🟢 Get all forms (Admin & Partner) — smart pagination
@@ -463,8 +459,8 @@ export const getAllForms = async (req, res) => {
 
       const formattedForms = forms.map((form) => ({
         ...form._doc,
-        createdAt: formatIST(form.createdAt),
-        updatedAt: formatIST(form.updatedAt),
+        createdAt: form.createdAt, // raw date
+        updatedAt: form.updatedAt, // raw date
       }));
 
       console.log("📦 Returning all forms:", formattedForms.length);
@@ -485,8 +481,6 @@ export const getAllForms = async (req, res) => {
     });
   }
 };
-
-
 
 // 🟢 Get all clients by agent (Partner dashboard)
 export const getClientsByAgent = async (req, res) => {
