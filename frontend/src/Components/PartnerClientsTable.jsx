@@ -571,7 +571,6 @@ export default function PartnerClientsTable({ agentId: propAgentId }) {
                       <tr>
                         <td colSpan={7} className="py-16 text-center">
                           <div className="w-24 h-24 bg-emerald-100/20 rounded-full mx-auto mb-5 flex items-center justify-center">
-                            <span className="text-5xl">Empty mailbox</span>
                           </div>
                           <p className="text-xl font-semibold text-white/80">No clients found</p>
                           <p className="text-sm text-white/60 mt-1">Start adding clients to see them here.</p>

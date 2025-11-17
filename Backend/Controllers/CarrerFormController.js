@@ -390,10 +390,8 @@ export const submitCareerForm = async (req, res) => {
     }
 
     // ✅ Merge course + subcourse properly
-    const mergedCourse =
-      formData.q7_preferredDomain && formData.q7_subCourse
-        ? `${formData.q7_preferredDomain} (${formData.q7_subCourse})`
-        : formData.q7_preferredDomain || "";
+const mergedCourse = formData.q7_preferredDomain;
+
 
     // ✅ Prepare data for DB
     const completeData = {

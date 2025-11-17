@@ -1070,7 +1070,19 @@ export default function GetStarted() {
 
   // ✅ Handle Next / Submit
   const handleNext = async () => {
+    // 🔥 Always capture latest subcourse directly from DOM (100% accurate)
+    const subcourseFromDOM = document.querySelector("#subcourse-select")?.value;
+
     if (currentStep === totalSteps) {
+      // 🔥 Merge preferred domain + subcourse for backend
+      let mergedCourse = selectedOptions[7] || "";
+      const finalSubcourse =
+        subcourseFromDOM || selectedOptions.subCourse || "";
+
+      if (finalSubcourse !== "") {
+        mergedCourse = `${selectedOptions[7]} (${finalSubcourse})`;
+      }
+
       const payload = {
         q1_experienceLevel: selectedOptions[1],
         q2_previousITExperience: selectedOptions[2],
@@ -1079,11 +1091,15 @@ export default function GetStarted() {
         q4_yearOfPassing: selectedOptions[4],
         q5_interestArea: selectedOptions[5],
         q6_jobAwareness: selectedOptions[6],
-        q7_preferredDomain: selectedOptions[7],
-        q7_subCourse: selectedOptions.subCourse || "",
+
+        // 🔥 Send merged course
+        q7_preferredDomain: mergedCourse,
+
         q8_careerGoal: selectedOptions[8],
         q9_trainingTime: selectedOptions[9],
         q10_guidanceCall: selectedOptions[10],
+
+        // Personal details
         name: personalDetails.name,
         email: personalDetails.email,
         whatsappNumber: personalDetails.whatsapp,
@@ -1094,7 +1110,7 @@ export default function GetStarted() {
         agentId,
       };
 
-      console.log("📦 Submitting form data:", payload);
+      console.log("📦 FINAL payload submitted:", payload);
 
       try {
         setLoading(true);
@@ -1102,44 +1118,29 @@ export default function GetStarted() {
         const endpoint = `/api/carrer-form/submit?agentId=${testAgent}`;
 
         const res = await axiosInstance.post(endpoint, payload);
-        console.log("✅ Form submitted successfully:", res.data);
+
+        console.log("✅ Submitted Successfully:", res.data);
 
         setShowPopup(true);
         setTimeout(() => setShowPopup(false), 4000);
       } catch (error) {
         console.error("❌ Submission failed:", error);
-        if (error.response) {
-          console.error("🧾 Backend Response:", error.response.data);
-          alert(error.response.data.message || "Submission failed. Try again.");
-        } else {
-          alert("Network error. Please check your connection.");
-        }
+        alert(
+          error?.response?.data?.message || "Submission failed. Try again."
+        );
       } finally {
         setLoading(false);
       }
+
       return;
     }
 
-    // ✅ Validation before next
-    const currentQ = qustions[currentStep - 1];
-    if (currentStep <= qustions.length) {
-      if (currentStep === 7) {
-        const hasSubcourses = SubCourses[selectedOptions[7]];
-        if (hasSubcourses && !selectedOptions.subCourse) {
-          alert("Please select a subcourse before proceeding.");
-          return;
-        }
-      }
-
-      if (
-        (currentQ.type === "input" &&
-          (!selectedOptions[currentStep] ||
-            selectedOptions[currentStep].trim() === "")) ||
-        (currentQ.type === "button" &&
-          !selectedOptions[currentStep] &&
-          currentQ.id !== 2)
-      ) {
-        alert("Please fill out this question before proceeding.");
+    // ⛔ Step 7 validation
+    if (currentStep === 7) {
+      const finalSubcourse =
+        subcourseFromDOM || selectedOptions.subCourse || "";
+      if (SubCourses[selectedOptions[7]] && finalSubcourse === "") {
+        alert("Please select a subcourse before proceeding.");
         return;
       }
     }
@@ -1216,8 +1217,8 @@ export default function GetStarted() {
         <p className="text-lg text-gray-600 mt-8">
           At Bsoft Education, we make your career path selection simple and
           clear. If you're unsure where to start in IT or confused about which
-          course suits your interests, we've created a platform
-          designed just for you.
+          course suits your interests, we've created a platform designed just
+          for you.
         </p>
       </div>
 
@@ -1228,8 +1229,7 @@ export default function GetStarted() {
             {[...Array(totalSteps)].map((_, index) => {
               const stepNumber = index + 1;
               const shouldShow =
-                stepNumber >= currentStep - 1 &&
-                stepNumber <= currentStep + 2;
+                stepNumber >= currentStep - 1 && stepNumber <= currentStep + 2;
 
               if (!shouldShow) return null;
 
@@ -1251,16 +1251,15 @@ export default function GetStarted() {
                   >
                     {stepNumber}
                   </div>
-                  {stepNumber < totalSteps &&
-                    stepNumber < currentStep + 2 && (
-                      <div
-                        className={`h-0.5 transition-all duration-500 ${
-                          stepNumber < currentStep
-                            ? "w-12 bg-black"
-                            : "w-6 bg-gray-200"
-                        }`}
-                      ></div>
-                    )}
+                  {stepNumber < totalSteps && stepNumber < currentStep + 2 && (
+                    <div
+                      className={`h-0.5 transition-all duration-500 ${
+                        stepNumber < currentStep
+                          ? "w-12 bg-black"
+                          : "w-6 bg-gray-200"
+                      }`}
+                    ></div>
+                  )}
                 </motion.div>
               );
             })}
@@ -1323,10 +1322,10 @@ export default function GetStarted() {
                       placeholder={currentQuestion.inputPlaceholder}
                       className="mt-4 w-full p-3 border-2 rounded-lg focus:outline-none focus:border-green-600"
                       onChange={(e) =>
-                        setSelectedOptions({
-                          ...selectedOptions,
-                          role: e.target.value,
-                        })
+                        setSelectedOptions((prev) => ({
+                          ...prev,
+                          subCourse: e.target.value.trim(),
+                        }))
                       }
                     />
                   )}
@@ -1359,12 +1358,13 @@ export default function GetStarted() {
                   className="flex justify-center mt-6"
                 >
                   <select
+                    id="subcourse-select" // 🔥 Needed for DOM extraction
                     value={selectedOptions.subCourse || ""}
                     onChange={(e) =>
-                      setSelectedOptions({
-                        ...selectedOptions,
+                      setSelectedOptions((prev) => ({
+                        ...prev,
                         subCourse: e.target.value,
-                      })
+                      }))
                     }
                     className="w-full md:w-1/2 p-3 border-2 rounded-lg focus:outline-none focus:border-green-600"
                   >
