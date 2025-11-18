@@ -36,7 +36,7 @@ import { toast } from "react-toastify";
 console.log("🌍 Active API Base URL:", import.meta.env.VITE_API_BASE_URL);
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:4000",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://bsofteducation.in/api",
   withCredentials: true, // helps for cookie/session-based auth if needed
 });
 
