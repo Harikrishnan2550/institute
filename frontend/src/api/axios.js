@@ -28,26 +28,23 @@
 // export default axiosInstance;
 
 
-
 import axios from "axios";
 import { toast } from "react-toastify";
 
-// ✅ Automatically pick correct base URL (local or production)
-console.log("🌍 Active API Base URL:", import.meta.env.VITE_API_BASE_URL);
-
+// 🔥 FIXED: Always hit /api (Apache will proxy to backend)
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://bsofteducation.in/api",
-  withCredentials: true, // helps for cookie/session-based auth if needed
+  baseURL: "/api",
+  withCredentials: false,
 });
 
-// ✅ Automatically attach token
+// 🔥 Attach token automatically
 axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// ✅ Auto logout on 401
+// 🔥 Auto logout on unauthorized
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {

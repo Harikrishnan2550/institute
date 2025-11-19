@@ -203,7 +203,7 @@ const handleSubmit = async (e) => {
   setIsLoading(true);
   setError("");
 
-  const endpoint = isLogin ? "/api/user/login" : "/api/user/register";
+const endpoint = isLogin ? "/login" : "/register";
   const { name, email, password } = formData;
   const payload = isLogin ? { email, password } : { name, email, password };
 
@@ -257,19 +257,22 @@ const handleSubmit = async (e) => {
       navigate("/partner/dashboard");
     }
   } catch (err) {
-    console.error("Login/Signup Error (network/axios):", err);
+  console.error("Login/Signup Error (network/axios):", err);
 
-    // Prefer backend message if present
-    const serverMessage =
-      err?.response?.data?.message ||
-      err?.response?.data?.error ||
-      err?.response?.data ||
-      err?.message ||
-      "Something went wrong. Please try again.";
+  let serverMessage =
+    err?.response?.data?.message ||
+    err?.response?.data?.error ||
+    err?.response?.data ||
+    err?.message ||
+    "Login failed";
 
-    setError(serverMessage);
-    toast.error(serverMessage);
-  } finally {
+  // REMOVE ALL HTML TAGS (important fix)
+  serverMessage = String(serverMessage).replace(/<[^>]*>/g, "").slice(0, 200);
+
+  setError(serverMessage);
+  toast.error(serverMessage);
+}
+  finally {
     setIsLoading(false);
   }
 };
@@ -337,7 +340,7 @@ const handleSubmit = async (e) => {
 
           {error && (
             <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm text-center backdrop-blur-sm">
-              {error}
+              {String(error)}
             </div>
           )}
 
