@@ -1182,7 +1182,7 @@ const ClientStatusTable = () => {
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         fullWidth
-        maxWidth="500px"
+        maxWidth="5000px"
         PaperProps={{
           sx: {
             borderRadius: 4,
