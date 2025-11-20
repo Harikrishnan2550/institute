@@ -646,7 +646,8 @@ export default function AdminWallet() {
         return;
       }
 
-      const res = await axiosInstance.get("/api/wallet/all", {
+      // ✅ FIXED: Removed "/api" prefix
+      const res = await axiosInstance.get("/wallet/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -718,7 +719,8 @@ export default function AdminWallet() {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axiosInstance.put(`/api/wallet/${selectedWallet._id}`, editData, {
+      // ✅ FIXED: Removed "/api" prefix
+      await axiosInstance.put(`/wallet/${selectedWallet._id}`, editData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Wallet updated successfully");
@@ -739,8 +741,9 @@ export default function AdminWallet() {
   ) => {
     try {
       const token = localStorage.getItem("token");
+      // ✅ FIXED: Removed "/api" prefix
       await axiosInstance.put(
-        `/api/wallet/${walletId}/withdrawal/${requestId}`,
+        `/wallet/${walletId}/withdrawal/${requestId}`,
         { status, reason },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -1163,6 +1166,3 @@ function RejectionModal({
     </div>
   );
 }
-
-
-

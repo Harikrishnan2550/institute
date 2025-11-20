@@ -244,7 +244,8 @@ export default function EditClientPage() {
         }
 
         // 🔹 Try to fetch from client-status first
-        const res = await axiosInstance.get(`/api/client-status/by-client/${id}`, {
+        // ✅ FIXED: Removed "/api" prefix
+        const res = await axiosInstance.get(`/client-status/by-client/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -268,7 +269,8 @@ export default function EditClientPage() {
         console.warn("⚠️ Client-status not found, fetching from career-form...");
         try {
           const token = localStorage.getItem("token");
-          const clientRes = await axiosInstance.get(`/api/carrer-form/${id}`, {
+          // ✅ FIXED: Removed "/api" prefix
+          const clientRes = await axiosInstance.get(`/carrer-form/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -307,7 +309,8 @@ export default function EditClientPage() {
         return;
       }
 
-      await axiosInstance.put(`/api/client-status/${id}`, formData, {
+      // ✅ FIXED: Removed "/api" prefix
+      await axiosInstance.put(`/client-status/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

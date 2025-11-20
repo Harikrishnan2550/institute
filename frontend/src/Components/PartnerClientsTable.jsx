@@ -370,7 +370,8 @@ export default function PartnerClientsTable({ agentId: propAgentId }) {
           return;
         }
 
-        const response = await axiosInstance.get(`/api/carrer-form/agent/${agentId}`, {
+        // ✅ FIXED: Removed "/api" prefix (axiosInstance adds it automatically)
+        const response = await axiosInstance.get(`/carrer-form/agent/${agentId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

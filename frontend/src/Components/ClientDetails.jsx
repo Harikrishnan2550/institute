@@ -308,7 +308,8 @@ const ClientDetails = () => {
 
       console.log("🟢 Data being sent to backend:", form);
 
-      await axiosInstance.put(`/api/carrer-form/${client._id}`, form, {
+      // ✅ FIXED: Removed "/api" prefix (axiosInstance adds it automatically)
+      await axiosInstance.put(`/carrer-form/${client._id}`, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

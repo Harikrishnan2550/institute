@@ -17,7 +17,8 @@ const AdminClientTrack = () => {
   const [selectedCourse, setSelectedCourse] = useState("All");
   const navigate = useNavigate();
 
-  const BASE = "http://localhost:4000/api/carrer-form";
+  // ✅ FIXED: Changed localhost to relative path so it works on live server
+  const BASE = "/api/carrer-form";
 
   // helper: try to parse date; if invalid, return original value
   const formatDateSafely = (value) => {

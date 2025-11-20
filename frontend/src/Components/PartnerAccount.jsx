@@ -391,7 +391,8 @@ export default function PartnerAccount() {
         const agentId = decoded.agentId;
         if (!agentId) return toast.error("Agent ID missing in token");
 
-        const res = await axiosInstance.get(`/api/partners/agent/${agentId}`, {
+        // ✅ FIXED: Removed "/api" prefix
+        const res = await axiosInstance.get(`/partners/agent/${agentId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -409,9 +410,9 @@ export default function PartnerAccount() {
           });
         }
 
-        // ✅ Fetch logo (optional endpoint)
+        // ✅ FIXED: Removed "/api" prefix
         const logoRes = await axiosInstance.get(
-          `/api/partners/public/logo/${agentId}`
+          `/partners/public/logo/${agentId}`
         );
         if (logoRes.data?.logo) {
           setPreview(logoRes.data.logo);
@@ -454,8 +455,9 @@ export default function PartnerAccount() {
       );
       if (logo) formDataToSend.append("logo", logo);
 
+      // ✅ FIXED: Removed "/api" prefix
       const res = await axiosInstance.put(
-        `/api/partners/agent/${agentId}`,
+        `/partners/agent/${agentId}`,
         formDataToSend,
         {
           headers: {
@@ -487,8 +489,9 @@ export default function PartnerAccount() {
       const decoded = JSON.parse(atob(token.split(".")[1]));
       const id = decoded.id;
 
+      // ✅ FIXED: Removed "/api" prefix
       await axiosInstance.put(
-        `/api/partners/${id}/password`,
+        `/partners/${id}/password`,
         {
           currentPassword: passwords.currentPassword,
           newPassword: passwords.newPassword,

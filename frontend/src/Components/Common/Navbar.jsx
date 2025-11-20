@@ -138,7 +138,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
         const decoded = JSON.parse(atob(token.split(".")[1]));
         if (decoded.role !== "partner") return;
 
-        const res = await axiosInstance.get(`/api/partners/agent/${decoded.agentId}`, {
+        const res = await axiosInstance.get(`/partners/agent/${decoded.agentId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

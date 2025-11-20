@@ -364,7 +364,8 @@ export default function PartnerWallet() {
           return;
         }
 
-        const res = await axiosInstance.get("/api/wallet/my-wallet", {
+        // ✅ FIXED: Removed "/api" prefix
+        const res = await axiosInstance.get("/wallet/my-wallet", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -395,8 +396,9 @@ export default function PartnerWallet() {
 
     try {
       const token = localStorage.getItem("token");
+      // ✅ FIXED: Removed "/api" prefix
       const res = await axiosInstance.post(
-        "/api/wallet/withdraw",
+        "/wallet/withdraw",
         { amount: withdrawAmount },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -406,7 +408,8 @@ export default function PartnerWallet() {
       toast.success("Withdrawal request sent successfully");
       setWithdrawAmount("");
 
-      const refreshed = await axiosInstance.get("/api/wallet/my-wallet", {
+      // ✅ FIXED: Removed "/api" prefix
+      const refreshed = await axiosInstance.get("/wallet/my-wallet", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWallet(refreshed.data.wallet || refreshed.data);

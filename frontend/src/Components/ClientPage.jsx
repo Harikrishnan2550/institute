@@ -714,10 +714,11 @@ const ClientStatusTable = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
+      // ✅ FIXED: Removed "/api" prefix from endpoints
       const endpoint =
         userRole === "admin"
-          ? `/api/client-status`
-          : `/api/client-status/my-clients`;
+          ? `/client-status`
+          : `/client-status/my-clients`;
 
       const response = await axiosInstance.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
@@ -809,8 +810,9 @@ const ClientStatusTable = () => {
   const handleUpdate = async () => {
     try {
       const token = localStorage.getItem("token");
+      // ✅ FIXED: Removed "/api" prefix
       await axiosInstance.put(
-        `/api/client-status/${selectedClient._id}`,
+        `/client-status/${selectedClient._id}`,
         {
           modeOfClass: selectedClient.modeOfClass,
           paymentStatus: selectedClient.paymentStatus,
