@@ -545,7 +545,7 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem("token");
       await axiosInstance.put(
-        `/api/partners/${selectedPartner._id}`,
+        `/partners/${selectedPartner._id}`,
         formData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -564,7 +564,7 @@ export default function AdminDashboard() {
     if (!window.confirm("Delete this partner?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axiosInstance.delete(`/api/partners/${id}`, {
+      await axiosInstance.delete(`/partners/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPartners((prev) => prev.filter((p) => p._id !== id));
