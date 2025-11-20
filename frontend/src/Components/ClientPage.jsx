@@ -1190,7 +1190,7 @@ const ClientStatusTable = () => {
             backdropFilter: "blur(16px)",
             border: "1px solid rgba(255,255,255,0.1)",
             boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
-            minHeight: "500px",
+            minHeight: "700px",
           },
         }}
       >
