@@ -1226,11 +1226,14 @@ const ClientStatusTable = () => {
               // ✅ Added InputLabelProps to fix cutoff issue
               InputLabelProps={{ 
                 shrink: true, 
-                style: { 
+                sx: { 
                   color: "#10b981", // Green label color
-                  fontSize: "1.1rem", 
                   fontWeight: "bold",
-                  top: "-5px" // Slight adjustment
+                  fontSize: "1.1rem", 
+                  backgroundColor: "#064E3B", // Matching background color
+                  padding: "0 8px",
+                  borderRadius: "4px",
+                  transform: "translate(14px, -12px) scale(0.75)" // Force position
                 } 
               }}
               InputProps={{
