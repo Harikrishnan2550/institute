@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { Calendar, Eye, RefreshCw } from "lucide-react";
 import { Pagination, Box } from "@mui/material";
-// ✅ FIXED: Use your centralized axios instance (handles URL & Token automatically)
 import axiosInstance from "../api/axios";
 
 const AdminClientTrack = () => {
@@ -50,7 +49,6 @@ const AdminClientTrack = () => {
 
         setLoading(true);
 
-        // ✅ FIXED: Removed "/api" (axiosInstance adds it) and localhost
         let url = "/carrer-form";
         if (selectedCourse === "All") {
           url = `/carrer-form?page=${page}&limit=${limit}`;
@@ -88,7 +86,6 @@ const AdminClientTrack = () => {
     const fetchAllClients = async () => {
       try {
         const token = localStorage.getItem("token");
-        // ✅ FIXED: Using axiosInstance
         const res = await axiosInstance.get("/carrer-form", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -110,18 +107,21 @@ const AdminClientTrack = () => {
     try {
       const token = localStorage.getItem("token");
       
-      // ✅ FIXED: Changed 'connectionStatus' to 'adminStatus' to match Backend Schema
+      // ✅ FIXED: Strictly updating 'connectionStatus' because that is what the dropdown controls
+      // and that is what exists in your Schema: connectionStatus: { enum: ["Connected", "Not Connected"] }
+      const payload = { connectionStatus: newStatus };
+
       await axiosInstance.put(
         `/carrer-form/${clientId}`,
-        { adminStatus: newStatus }, // <--- This name must match your DB
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       toast.success("Status updated successfully");
       
-      // Update local state to reflect change immediately
+      // Update local state so UI reflects change immediately without refresh
       setClients((prev) =>
-        prev.map((c) => (c._id === clientId ? { ...c, adminStatus: newStatus } : c))
+        prev.map((c) => (c._id === clientId ? { ...c, connectionStatus: newStatus } : c))
       );
     } catch (err) {
       console.error("Failed to update status:", err);
@@ -177,7 +177,7 @@ const AdminClientTrack = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Header & Filters (Same as before) */}
+      {/* Header & Filters */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
@@ -292,16 +292,16 @@ const AdminClientTrack = () => {
                     <td className="px-6 py-4 text-white/80">
                       {client.city}, {client.state}
                     </td>
-                    {/* ✅ FIXED: Using adminStatus instead of connectionStatus */}
+                    {/* ✅ FIXED: Bound to connectionStatus */}
                     <td className="px-6 py-4">
                       <select
-                        value={client.adminStatus || "Not Connected"}
+                        value={client.connectionStatus || "Not Connected"}
                         onChange={(e) =>
                           handleStatusChange(client._id, e.target.value)
                         }
                         disabled={updatingId === client._id}
                         className={`px-3 py-2 rounded-lg text-sm border-2 focus:outline-none ${
-                          client.adminStatus === "Connected"
+                          client.connectionStatus === "Connected"
                             ? "bg-emerald-500/80 border-emerald-400 text-white"
                             : "bg-red-500/80 border-red-400 text-white"
                         }`}
