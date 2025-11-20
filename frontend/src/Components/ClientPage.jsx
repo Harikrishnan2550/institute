@@ -1186,7 +1186,7 @@ const ClientStatusTable = () => {
         PaperProps={{
           sx: {
             borderRadius: 4,
-            background: "rgba(5,46,22,0.95)",
+            background: "rgba(5,46,22,0.95)", // Dark green background
             backdropFilter: "blur(16px)",
             border: "1px solid rgba(255,255,255,0.1)",
             boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
@@ -1205,7 +1205,9 @@ const ClientStatusTable = () => {
         >
           Edit Client Status
         </DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 3, px: 4 }}>
+        
+        {/* ✅ FIX APPLIED HERE: Added spacing and label styling for dark mode */}
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 4, mt: 4, px: 5 }}>
           {[
             ["Mode of Class", "modeOfClass", ["online", "offline"]],
             ["Payment Status", "paymentStatus", ["pending", "completed"]],
@@ -1221,16 +1223,26 @@ const ClientStatusTable = () => {
               }
               fullWidth
               variant="outlined"
+              // ✅ Added InputLabelProps to fix cutoff issue
+              InputLabelProps={{ 
+                shrink: true, 
+                style: { 
+                  color: "#10b981", // Green label color
+                  fontSize: "1.1rem", 
+                  fontWeight: "bold",
+                  top: "-5px" // Slight adjustment
+                } 
+              }}
               InputProps={{
                 sx: {
-                  bgcolor: "rgba(255,255,255,0.05)",
+                  bgcolor: "rgba(255,255,255,0.1)", // Lighter input background
                   color: "white",
                   borderRadius: 2,
-                  "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.2)" },
-                  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.4)" },
+                  "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
+                  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#10b981" }, // Green border on hover
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#10b981" }, // Green border on focus
                 },
               }}
-              InputLabelProps={{ style: { color: "rgba(255,255,255,0.7)" } }}
             >
               <MenuItem value="">Select</MenuItem>
               {options.map((opt) => (
@@ -1241,7 +1253,8 @@ const ClientStatusTable = () => {
             </TextField>
           ))}
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 2, justifyContent: "center" }}>
+
+        <DialogActions sx={{ p: 4, gap: 2, justifyContent: "center" }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{
@@ -1249,6 +1262,7 @@ const ClientStatusTable = () => {
               color: "white",
               borderRadius: 3,
               px: 4,
+              py: 1.5,
               "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
             }}
           >
@@ -1262,6 +1276,7 @@ const ClientStatusTable = () => {
               color: "white",
               borderRadius: 3,
               px: 5,
+              py: 1.5,
               fontWeight: "bold",
               "&:hover": { bgcolor: "linear-gradient(135deg, #047857, #059669)" },
             }}
