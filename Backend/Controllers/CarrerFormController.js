@@ -559,7 +559,7 @@ export const updateCareerForm = async (req, res) => {
       return res.status(404).json({ message: "Form not found" });
     }
 
-    // ✅ Record admin updates
+    // ✅ Record admin updates (History)
     const adminUpdate = {
       date: new Date(),
       adminStatus: updatedData.adminStatus || "",
@@ -570,7 +570,13 @@ export const updateCareerForm = async (req, res) => {
 
     form.adminUpdates.push(adminUpdate);
 
-    // ✅ Update current fields
+    // ✅ CRITICAL FIX: Save connectionStatus if provided
+    // The frontend sends 'connectionStatus', so we must catch it here!
+    if (updatedData.connectionStatus) {
+        form.connectionStatus = updatedData.connectionStatus;
+    }
+    
+    // Update other admin fields
     form.adminStatus = updatedData.adminStatus || form.adminStatus;
     form.adminRemarks = updatedData.adminRemarks || form.adminRemarks;
     form.adminRemarks2 = updatedData.adminRemarks2 || form.adminRemarks2;
