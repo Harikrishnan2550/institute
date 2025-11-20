@@ -363,7 +363,7 @@ export default function PartnerAccount() {
     email: "",
     mobile: "",
     location: "",
-    address: "", // ✅ added address
+    address: "",
     accountNumber: "",
     accountHolderName: "",
     ifscCode: "",
@@ -391,7 +391,6 @@ export default function PartnerAccount() {
         const agentId = decoded.agentId;
         if (!agentId) return toast.error("Agent ID missing in token");
 
-        // ✅ FIXED: Removed "/api" prefix
         const res = await axiosInstance.get(`/partners/agent/${agentId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -402,7 +401,7 @@ export default function PartnerAccount() {
             email: res.data.email || "",
             mobile: res.data.mobile || "",
             location: res.data.location || "",
-            address: res.data.address || "", // ✅ load from DB
+            address: res.data.address || "",
             accountNumber: res.data.accountNumber || "",
             accountHolderName: res.data.accountHolderName || "",
             ifscCode: res.data.ifscCode || "",
@@ -410,16 +409,33 @@ export default function PartnerAccount() {
           });
         }
 
-        // ✅ FIXED: Removed "/api" prefix
+        // ✅ Fetch Logo & Fix URL Logic
         const logoRes = await axiosInstance.get(
           `/partners/public/logo/${agentId}`
         );
+        
         if (logoRes.data?.logo) {
-          setPreview(logoRes.data.logo);
+          // 1. Replace backslashes (Windows path fix)
+          let logoPath = logoRes.data.logo.replace(/\\/g, "/");
+          
+          // 2. Get Base URL without trailing slash
+          const baseURL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
+
+          // 3. Construct full URL
+          if (!logoPath.startsWith("http")) {
+            // Ensure path starts with /
+            if (!logoPath.startsWith("/")) logoPath = `/${logoPath}`;
+            setPreview(`${baseURL}${logoPath}`);
+          } else {
+            setPreview(logoPath);
+          }
         }
       } catch (error) {
         console.error("❌ Error fetching partner:", error);
-        toast.error("Failed to fetch partner details");
+        // Suppress error if just logo is missing to avoid UI clutter
+        if (!error.config?.url?.includes('logo')) {
+            toast.error("Failed to fetch partner details");
+        }
       } finally {
         setLoading(false);
       }
@@ -442,7 +458,7 @@ export default function PartnerAccount() {
     setPreview(URL.createObjectURL(file));
   };
 
-  /* 🟢 Save Profile Changes (with logo + address) */
+  /* 🟢 Save Profile Changes */
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -455,7 +471,6 @@ export default function PartnerAccount() {
       );
       if (logo) formDataToSend.append("logo", logo);
 
-      // ✅ FIXED: Removed "/api" prefix
       const res = await axiosInstance.put(
         `/partners/agent/${agentId}`,
         formDataToSend,
@@ -467,9 +482,20 @@ export default function PartnerAccount() {
         }
       );
 
+      // ✅ Update Preview immediately with robust logic
       if (res.data.data?.logo) {
-        const base = import.meta.env.VITE_API_BASE_URL;
-        setPreview(`${base}${res.data.data.logo}`);
+        let logoPath = res.data.data.logo.replace(/\\/g, "/");
+        const baseURL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
+        
+        if (!logoPath.startsWith("http")) {
+           if (!logoPath.startsWith("/")) logoPath = `/${logoPath}`;
+           setPreview(`${baseURL}${logoPath}`);
+        } else {
+           setPreview(logoPath);
+        }
+        
+        // Update local storage if you use it
+        localStorage.setItem("partnerLogo", logoPath);
       }
 
       toast.success("Profile updated successfully ✅");
@@ -489,7 +515,6 @@ export default function PartnerAccount() {
       const decoded = JSON.parse(atob(token.split(".")[1]));
       const id = decoded.id;
 
-      // ✅ FIXED: Removed "/api" prefix
       await axiosInstance.put(
         `/partners/${id}/password`,
         {
@@ -507,7 +532,6 @@ export default function PartnerAccount() {
     }
   };
 
-  /* 🟢 Loading Screen */
   if (loading)
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 flex items-center justify-center">
@@ -529,7 +553,6 @@ export default function PartnerAccount() {
       </div>
     );
 
-  /* 🟢 UI */
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 mt-2">
       {/* Background Orbs */}
@@ -579,7 +602,14 @@ export default function PartnerAccount() {
                   <img
                     src={preview}
                     alt="Profile Logo"
-                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-emerald-500 object-cover shadow-lg"
+                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-emerald-500 object-cover shadow-lg bg-white"
+                    onError={(e) => {
+                         e.target.onerror = null; 
+                         // If full URL fails, assume it might be because of missing /uploads prefix in some cases
+                         if (!e.target.src.includes('uploads') && preview.split('/').pop()) {
+                             e.target.src = `${import.meta.env.VITE_API_BASE_URL}/uploads/${preview.split('/').pop()}`;
+                         }
+                    }}
                   />
                 ) : (
                   <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-white/10 border-2 border-emerald-500/40 flex items-center justify-center text-emerald-400 text-4xl">
