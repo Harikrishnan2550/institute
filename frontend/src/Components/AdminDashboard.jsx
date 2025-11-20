@@ -505,7 +505,7 @@ export default function AdminDashboard() {
     const fetchPartners = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axiosInstance.get("/api/partners", {
+        const res = await axiosInstance.get("/partners", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPartners(res.data);
