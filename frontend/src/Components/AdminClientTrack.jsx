@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { Calendar, Eye, RefreshCw } from "lucide-react";
 import { Pagination, Box } from "@mui/material";
+// ✅ FIXED: Use your centralized axios instance (handles URL & Token automatically)
+import axiosInstance from "../api/axios";
 
 const AdminClientTrack = () => {
   const [clients, setClients] = useState([]);
-  const [allClients, setAllClients] = useState([]); // for filtering
+  const [allClients, setAllClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [page, setPage] = useState(1);
@@ -17,15 +18,8 @@ const AdminClientTrack = () => {
   const [selectedCourse, setSelectedCourse] = useState("All");
   const navigate = useNavigate();
 
-  // ✅ FIXED: Changed localhost to relative path so it works on live server
-  const BASE = "/api/carrer-form";
-
-  // helper: try to parse date; if invalid, return original value
   const formatDateSafely = (value) => {
     if (!value) return "—";
-    // If it's already a readable string (contains letters like "AM" or "-" or "/")
-    // we assume backend already formatted it and return as-is.
-    // Otherwise try to parse as Date.
     const likelyFormatted =
       typeof value === "string" &&
       (/[AP]M|am|pm/.test(value) || /[a-zA-Z]{3,}/.test(value) || /\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/.test(value));
@@ -40,11 +34,10 @@ const AdminClientTrack = () => {
         year: "numeric",
       });
     }
-    // fallback: return original
     return value;
   };
 
-  // 🟢 Fetch clients (paginated for "All", full for filters)
+  // 🟢 Fetch clients
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -57,16 +50,16 @@ const AdminClientTrack = () => {
 
         setLoading(true);
 
-        let url = BASE;
+        // ✅ FIXED: Removed "/api" (axiosInstance adds it) and localhost
+        let url = "/carrer-form";
         if (selectedCourse === "All") {
-          url = `${BASE}?page=${page}&limit=${limit}`;
+          url = `/carrer-form?page=${page}&limit=${limit}`;
         }
 
-        const res = await axios.get(url, {
+        const res = await axiosInstance.get(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // unified handling for paginated + full response
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
 
         setClients(data);
@@ -90,12 +83,13 @@ const AdminClientTrack = () => {
     fetchClients();
   }, [page, limit, selectedCourse, navigate]);
 
-  // 🟢 Also fetch ALL clients once (for course dropdown)
+  // 🟢 Fetch ALL clients for filter
   useEffect(() => {
     const fetchAllClients = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(BASE, {
+        // ✅ FIXED: Using axiosInstance
+        const res = await axiosInstance.get("/carrer-form", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAllClients(Array.isArray(res.data) ? res.data : res.data.data || []);
@@ -106,26 +100,28 @@ const AdminClientTrack = () => {
     fetchAllClients();
   }, []);
 
-  // 🟢 Navigate to client details page
   const handleView = (client) => {
     navigate(`/admin/client/${client._id}`, { state: { client } });
   };
 
-  // 🟢 Update connection status
+  // 🟢 Update Status (The Critical Fix)
   const handleStatusChange = async (clientId, newStatus) => {
     setUpdatingId(clientId);
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
-        `${BASE}/${clientId}`,
-        { connectionStatus: newStatus },
+      
+      // ✅ FIXED: Changed 'connectionStatus' to 'adminStatus' to match Backend Schema
+      await axiosInstance.put(
+        `/carrer-form/${clientId}`,
+        { adminStatus: newStatus }, // <--- This name must match your DB
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       toast.success("Status updated successfully");
-      // refresh current page of clients after update
-      // (optional) you can re-fetch or update local state
+      
+      // Update local state to reflect change immediately
       setClients((prev) =>
-        prev.map((c) => (c._id === clientId ? { ...c, connectionStatus: newStatus } : c))
+        prev.map((c) => (c._id === clientId ? { ...c, adminStatus: newStatus } : c))
       );
     } catch (err) {
       console.error("Failed to update status:", err);
@@ -135,7 +131,6 @@ const AdminClientTrack = () => {
     }
   };
 
-  // 🟢 Unique courses for filter dropdown
   const uniqueCourses = useMemo(() => {
     const set = new Set(
       allClients.map((c) => c.q7_preferredDomain).filter(Boolean)
@@ -143,7 +138,6 @@ const AdminClientTrack = () => {
     return ["All", ...Array.from(set)];
   }, [allClients]);
 
-  // 🟢 Filtered client data
   const filteredClients =
     selectedCourse === "All"
       ? clients
@@ -153,16 +147,13 @@ const AdminClientTrack = () => {
             c.q7_subCourse === selectedCourse
         );
 
-  // 🟢 Count for filtered course
   const filteredCount =
     selectedCourse === "All" ? allClients.length : filteredClients.length;
 
-  // 🟢 Pagination logic
   const totalPages =
     selectedCourse === "All" ? Math.ceil(totalClients / limit) : 1;
   const handlePageChange = (event, value) => setPage(value);
 
-  // 🟢 Loading screen
   if (loading)
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 flex items-center justify-center p-4">
@@ -184,19 +175,14 @@ const AdminClientTrack = () => {
       </div>
     );
 
-  // 🧱 Main UI (unchanged)
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Background Orbs */}
+      {/* Header & Filters (Same as before) */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
       </div>
 
-      {/* Header */}
       <div className="relative mb-10 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
           <h1 className="mt-5 overflow-visible leading-snug text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
@@ -205,7 +191,6 @@ const AdminClientTrack = () => {
           <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">
             Manage and track all client interactions
           </p>
-
           <p className="text-emerald-400 mt-2 font-semibold">
             {selectedCourse === "All"
               ? `Total Students: ${filteredCount}`
@@ -213,7 +198,6 @@ const AdminClientTrack = () => {
           </p>
         </div>
 
-        {/* Filter + Rows */}
         <div className="flex items-center gap-2 mr-[300px]">
           <label className="text-white/70 text-sm font-medium">
             Filter by Course:
@@ -308,15 +292,16 @@ const AdminClientTrack = () => {
                     <td className="px-6 py-4 text-white/80">
                       {client.city}, {client.state}
                     </td>
+                    {/* ✅ FIXED: Using adminStatus instead of connectionStatus */}
                     <td className="px-6 py-4">
                       <select
-                        value={client.connectionStatus || "Not Connected"}
+                        value={client.adminStatus || "Not Connected"}
                         onChange={(e) =>
                           handleStatusChange(client._id, e.target.value)
                         }
                         disabled={updatingId === client._id}
                         className={`px-3 py-2 rounded-lg text-sm border-2 focus:outline-none ${
-                          client.connectionStatus === "Connected"
+                          client.adminStatus === "Connected"
                             ? "bg-emerald-500/80 border-emerald-400 text-white"
                             : "bg-red-500/80 border-red-400 text-white"
                         }`}
