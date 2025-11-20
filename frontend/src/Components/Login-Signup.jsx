@@ -1,8 +1,3 @@
-
-
-
-
-
 // import React, { useState } from "react";
 // import axios from "axios";
 // import { useNavigate } from "react-router-dom";
@@ -149,12 +144,6 @@
 
 // export default LoginSignup;
 
-
-
-
-
-
-
 // src/Components/LoginSignup.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -171,7 +160,11 @@ const LoginSignup = () => {
   const isSignupParam = queryParams.get("signup") === "true";
 
   const [isLogin, setIsLogin] = useState(!isSignupParam);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -198,85 +191,92 @@ const LoginSignup = () => {
   };
 
   // ✅ Submit Login / Signup form
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-const endpoint = isLogin ? "/login" : "/register";
-  const { name, email, password } = formData;
-  const payload = isLogin ? { email, password } : { name, email, password };
+    const endpoint = isLogin ? "/user/login" : "/user/register";
+    const { name, email, password } = formData;
+    const payload = isLogin ? { email, password } : { name, email, password };
 
-  try {
-    const response = await axiosInstance.post(endpoint, payload);
+    try {
+      const response = await axiosInstance.post(endpoint, payload);
 
-    // 🔎 Debug: print full response payload
-    console.log("🧠 FULL LOGIN/SIGNUP RESPONSE:", response);
-    console.log("🧠 response.data:", response.data);
+      // 🔎 Debug: print full response payload
+      console.log("🧠 FULL LOGIN/SIGNUP RESPONSE:", response);
+      console.log("🧠 response.data:", response.data);
 
-    // Robust token extraction (covers various backend response shapes)
-    const token =
-      response.data?.token ||
-      response.data?.data?.token ||
-      response.data?.user?.token ||
-      response.data?.data?.user?.token ||
-      response.data?.tokenString; // extra fallback if named differently
+      // Robust token extraction (covers various backend response shapes)
+      const token =
+        response.data?.token ||
+        response.data?.data?.token ||
+        response.data?.user?.token ||
+        response.data?.data?.user?.token ||
+        response.data?.tokenString; // extra fallback if named differently
 
-    // If JWT included inside user object (common)
-    const userFromResponse =
-      response.data?.user || response.data?.data?.user || response.data?.data || response.data;
+      // If JWT included inside user object (common)
+      const userFromResponse =
+        response.data?.user ||
+        response.data?.data?.user ||
+        response.data?.data ||
+        response.data;
 
-    const role = response.data?.user?.role || response.data?.role || userFromResponse?.role;
-    const agentId = userFromResponse?.agentId || response.data?.agentId;
+      const role =
+        response.data?.user?.role ||
+        response.data?.role ||
+        userFromResponse?.role;
+      const agentId = userFromResponse?.agentId || response.data?.agentId;
 
-    console.log("🧩 Extracted token:", token);
-    console.log("🧩 Extracted role:", role, "agentId:", agentId);
+      console.log("🧩 Extracted token:", token);
+      console.log("🧩 Extracted role:", role, "agentId:", agentId);
 
-    if (!token) {
-      // Show backend message if exists
-      const backendMessage =
-        response.data?.message ||
-        response.data?.data?.message ||
-        (typeof response.data === "string" ? response.data : null) ||
-        "No token received from backend";
-      setError(backendMessage);
-      toast.error(backendMessage);
+      if (!token) {
+        // Show backend message if exists
+        const backendMessage =
+          response.data?.message ||
+          response.data?.data?.message ||
+          (typeof response.data === "string" ? response.data : null) ||
+          "No token received from backend";
+        setError(backendMessage);
+        toast.error(backendMessage);
+        setIsLoading(false);
+        return;
+      }
+
+      // Save token + role + agentId
+      localStorage.setItem("token", token);
+      if (role) localStorage.setItem("role", role);
+      if (role === "partner" && agentId)
+        localStorage.setItem("agentId", agentId);
+
+      toast.success(isLogin ? "Logged in successfully!" : "Account created!");
+      if (role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/partner/dashboard");
+      }
+    } catch (err) {
+      console.error("Login/Signup Error (network/axios):", err);
+
+      let serverMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.response?.data ||
+        err?.message ||
+        "Login failed";
+
+      // REMOVE ALL HTML TAGS (important fix)
+      serverMessage = String(serverMessage)
+        .replace(/<[^>]*>/g, "")
+        .slice(0, 200);
+
+      setError(serverMessage);
+      toast.error(serverMessage);
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    // Save token + role + agentId
-    localStorage.setItem("token", token);
-    if (role) localStorage.setItem("role", role);
-    if (role === "partner" && agentId) localStorage.setItem("agentId", agentId);
-
-    toast.success(isLogin ? "Logged in successfully!" : "Account created!");
-    if (role === "admin") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/partner/dashboard");
-    }
-  } catch (err) {
-  console.error("Login/Signup Error (network/axios):", err);
-
-  let serverMessage =
-    err?.response?.data?.message ||
-    err?.response?.data?.error ||
-    err?.response?.data ||
-    err?.message ||
-    "Login failed";
-
-  // REMOVE ALL HTML TAGS (important fix)
-  serverMessage = String(serverMessage).replace(/<[^>]*>/g, "").slice(0, 200);
-
-  setError(serverMessage);
-  toast.error(serverMessage);
-}
-  finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
@@ -294,7 +294,11 @@ const endpoint = isLogin ? "/login" : "/register";
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg mb-4">
-            {isLogin ? <LogIn className="w-8 h-8 text-white" /> : <UserPlus className="w-8 h-8 text-white" />}
+            {isLogin ? (
+              <LogIn className="w-8 h-8 text-white" />
+            ) : (
+              <UserPlus className="w-8 h-8 text-white" />
+            )}
           </div>
           <h2 className="text-3xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
             {isLogin ? "Welcome Back" : "Join Us"}
@@ -354,7 +358,11 @@ const endpoint = isLogin ? "/login" : "/register";
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  {isLogin ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
+                  {isLogin ? (
+                    <LogIn className="w-5 h-5" />
+                  ) : (
+                    <UserPlus className="w-5 h-5" />
+                  )}
                   <span>{isLogin ? "Login" : "Sign Up"}</span>
                 </>
               )}
@@ -382,7 +390,15 @@ const endpoint = isLogin ? "/login" : "/register";
 };
 
 // ✅ Floating Label Input Component
-const FloatingInput = ({ icon, type, name, value, onChange, placeholder, required }) => {
+const FloatingInput = ({
+  icon,
+  type,
+  name,
+  value,
+  onChange,
+  placeholder,
+  required,
+}) => {
   const [focused, setFocused] = useState(false);
   const hasValue = value.length > 0;
 

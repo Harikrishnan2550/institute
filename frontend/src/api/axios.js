@@ -31,20 +31,18 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-// 🔥 FIXED: Always hit /api (Apache will proxy to backend)
+// ✅ FIXED: Point to the generic /api so we can access /dashboard, /partners, etc.
 const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: "/api", 
   withCredentials: false,
 });
 
-// 🔥 Attach token automatically
 axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// 🔥 Auto logout on unauthorized
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
