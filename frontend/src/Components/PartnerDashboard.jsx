@@ -179,10 +179,12 @@ export default function PartnerDashboard() {
         }
 
         if (agentId) {
-          setPartnerLink(`http://localhost:5173/?agentId=${agentId}`);
+          // ✅ FIXED: Uses your live student domain now
+          setPartnerLink(`https://student.bsofteducation.in/?agentId=${agentId}`);
         }
 
-        const res = await axiosInstance.get("/api/wallet/my-wallet", {
+        // ✅ FIXED: Removed extra "/api" prefix (axiosInstance already adds it)
+        const res = await axiosInstance.get("/wallet/my-wallet", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
