@@ -1234,7 +1234,7 @@ const ClientStatusTable = () => {
                   backgroundColor: "#064E3B", // Matching background color
                   padding: "0 8px",
                   borderRadius: "4px",
-                  transform: "translate(14px, -12px) scale(0.75)" // Force position
+                  transform: "none" // Force position
                 } 
               }}
               InputProps={{
