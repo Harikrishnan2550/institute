@@ -118,6 +118,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios.js";
 import { toast } from "react-toastify";
+import { LogOut } from "lucide-react"; // ✅ Import LogOut icon
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   const location = useLocation();
@@ -128,6 +129,21 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
 
   const isAdmin = location.pathname.includes("/admin");
   const isPartner = location.pathname.includes("/partner");
+
+  // ✅ Logout Logic
+  const handleLogout = () => {
+    // 1. Clear all stored data
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("agentId");
+    localStorage.clear(); 
+
+    // 2. Show notification
+    toast.success("Logged out successfully");
+
+    // 3. Redirect to Login Page
+    navigate("/");
+  };
 
   useEffect(() => {
     const fetchPartnerLogo = async () => {
@@ -148,7 +164,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
         }
       } catch (error) {
         console.error("Error fetching partner logo:", error);
-        toast.error("Failed to load partner info");
+        // toast.error("Failed to load partner info");
       }
     };
 
@@ -225,15 +241,31 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
             {isPartner && (
               <button
                 onClick={() => navigate("/partner/account")}
-                className="group relative bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 shadow-lg shadow-emerald-600/40 hover:shadow-xl hover:shadow-emerald-500/60 transform hover:scale-105 overflow-hidden"
+                className="hidden sm:flex group relative bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 shadow-lg shadow-emerald-600/40 hover:shadow-xl hover:shadow-emerald-500/60 transform hover:scale-105 overflow-hidden"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  <span className="hidden sm:inline">Account</span>
-                  <span className="sm:hidden">Account</span>
+                  <span>Account</span>
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
               </button>
             )}
+
+            {/* ✅ LOGOUT BUTTON (Desktop) */}
+            <button
+              onClick={handleLogout}
+              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl font-bold transition-all duration-300 border border-red-500/20"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </button>
+
+            {/* ✅ LOGOUT ICON (Mobile) */}
+            <button
+              onClick={handleLogout}
+              className="sm:hidden flex items-center justify-center w-10 h-10 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300 border border-red-500/20"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
 
             {/* Desktop Role Badge */}
             <div className="hidden sm:flex items-center gap-3 bg-white/5 backdrop-blur-xl px-4 sm:px-5 py-2.5 rounded-xl border border-white/10 shadow-lg">
@@ -245,13 +277,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               </span>
             </div>
 
-            {/* Mobile Role Badge */}
-            <div className="sm:hidden relative group">
-              <div className={`absolute inset-0 ${isAdmin ? "bg-red-500" : "bg-emerald-500"} rounded-full blur-md opacity-50 group-hover:opacity-75 transition-opacity duration-300`}></div>
-              <div className={`relative flex items-center justify-center w-10 h-10 rounded-full ${isAdmin ? "bg-gradient-to-br from-red-600 to-orange-600" : "bg-gradient-to-br from-emerald-600 to-green-600"} backdrop-blur-xl shadow-lg border border-white/20 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12`}>
-                <span className="text-sm font-black">{isAdmin ? "A" : "P"}</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
