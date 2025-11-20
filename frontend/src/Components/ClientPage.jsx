@@ -1231,7 +1231,7 @@ const ClientStatusTable = () => {
                   color: "#10b981", // Green label color
                   fontWeight: "bold",
                   fontSize: "1.1rem", 
-                  backgroundColor: "#064E3B", // Matching background color
+                  backgroundColor: "transparent", // Matching background color
                   padding: "0 8px",
                   borderRadius: "4px",
                   transform: "none" // Force position
