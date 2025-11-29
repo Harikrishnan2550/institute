@@ -1,12 +1,16 @@
-// import carrerForm from "../Models/CarrerFormModel.js";
+// console.log("🧩 Using Controller File: CarrerFormController.js (ACTIVE)");
+
+// import CareerForm from "../Models/CarrerFormModel.js";
 // import { formatIST } from "../utils/TimeFormat.js";
 // import UserModel from "../Models/UserModel.js";
 
-// // 🟢 Submit new form
+// // 🟢 Submit new form (Frontend form submission)
 // export const submitCareerForm = async (req, res) => {
 //   try {
-//     const { agentId } = req.query; // e.g. ?agentId=AGT-0005
-//     const formData = req.body;
+//     const { agentId } = req.query;
+//     const formData = req.body || {};
+
+//     console.log("📥 Incoming form data:", formData);
 
 //     if (!agentId) {
 //       return res
@@ -14,7 +18,7 @@
 //         .json({ success: false, message: "Agent ID missing in referral link" });
 //     }
 
-//     // ✅ verify that the agentId exists in the user collection
+//     // ✅ Validate agent ID
 //     const partner = await UserModel.findOne({ agentId });
 //     if (!partner) {
 //       return res
@@ -22,183 +26,20 @@
 //         .json({ success: false, message: "Invalid agent ID" });
 //     }
 
-//     // ✅ Save agentId to client form
-//     formData.agentId = agentId;
-//     formData.partnerName = partner.name; // optional: for easy admin reference
+//     // ✅ Merge course + subcourse properly
+//     const mergedCourse = formData.q7_preferredDomain;
 
-//     const form = new carrerForm(formData);
-//     await form.save();
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Form submitted successfully",
-//       form,
-//     });
-//   } catch (error) {
-//     console.error("Error submitting form:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to submit form", error });
-//   }
-// };
-
-// export const getClientsByAgent = async (req, res) => {
-//   try {
-//     const { agentId } = req.params;
-//     const clients = await carrerForm.find({ agentId });
-//     res.status(200).json({ success: true, data: clients });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
-// // 🟢 Get all forms (Admin & Partner use this)
-// export const getAllForms = async (req, res) => {
-//   try {
-//     const forms = await carrerForm.find().sort({ createdAt: -1 });
-
-//     if (!forms || forms.length === 0) {
-//       return res.status(200).json([]); // ✅ Return empty array if no data
-//     }
-
-//     // 🕒 Convert `createdAt` and `updatedAt` to IST before sending
-//     const formattedForms = forms.map((form) => ({
-//       ...form._doc,
-//       createdAt: formatIST(form.createdAt),
-//       updatedAt: formatIST(form.updatedAt),
-//     }));
-
-//     console.log("✅ Sending formatted data:", formattedForms[0]); // For debugging
-//     res.status(200).json(formattedForms);
-//   } catch (error) {
-//     console.error("Error fetching forms:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to fetch forms", error });
-//   }
-// };
-
-// // 🟢 Get form by ID
-// export const getFormById = async (req, res) => {
-//   try {
-//     const form = await carrerForm.findById(req.params.id);
-//     if (!form)
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Form not found" });
-
-//     // 🕒 Format createdAt in single item
-//     const formattedForm = {
-//       ...form._doc,
-//       createdAt: formatIST(form.createdAt),
+//     // ✅ Prepare data for DB
+//     const completeData = {
+//       ...formData,
+//       q7_preferredDomain: mergedCourse, // 👈 merged result stored
+//       agentId,
+//       partnerName: partner.name,
 //     };
 
-//     res.status(200).json(formattedForm);
-//   } catch (error) {
-//     console.error("Error fetching form:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to fetch form", error });
-//   }
-// };
+//     console.log("💾 Data saved to MongoDB:", completeData);
 
-// // 🟢 Update client details
-// export const updateClientDetails = async (req, res) => {
-//   try {
-//     const updated = await carrerForm.findByIdAndUpdate(req.params.id, req.body, {
-//       new: true,
-//     });
-//     if (!updated)
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Client not found" });
-
-//     res
-//       .status(200)
-//       .json({ success: true, message: "Client updated successfully", data: updated });
-//   } catch (error) {
-//     console.error("Error updating client:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to update client", error });
-//   }
-// };
-
-// export const updateCareerForm = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const updatedData = req.body;
-
-//     console.log("🟢 Update request received for ID:", id);
-//     console.log("📦 Data received:", updatedData);
-
-//     const updatedForm = await carrerForm.findByIdAndUpdate(id, updatedData, {
-//       new: true,
-//     });
-
-//     if (!updatedForm) {
-//       console.log("❌ Form not found for ID:", id);
-//       return res.status(404).json({ message: "Form not found" });
-//     }
-
-//     console.log("✅ Updated form successfully");
-//     res.status(200).json({
-//       success: true,
-//       message: "Form updated successfully",
-//       data: updatedForm,
-//     });
-//   } catch (error) {
-//     console.error("❌ Update Error:", error);
-//     res.status(500).json({ message: "Server Error", error });
-//   }
-// };
-
-// // 🟢 Delete form
-// export const deleteForm = async (req, res) => {
-//   try {
-//     const deleted = await carrerForm.findByIdAndDelete(req.params.id);
-//     if (!deleted)
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Form not found" });
-//     res.status(200).json({ success: true, message: "Form deleted successfully" });
-//   } catch (error) {
-//     console.error("Error deleting form:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to delete form", error });
-//   }
-// };
-
-// import carrerForm from "../Models/CarrerFormModel.js";
-// import { formatIST } from "../utils/TimeFormat.js";
-// import UserModel from "../Models/UserModel.js";
-
-// // 🟢 Submit new form
-// export const submitCareerForm = async (req, res) => {
-//   try {
-//     const { agentId } = req.query; // e.g. ?agentId=AGT-0005
-//     const formData = req.body;
-
-//     if (!agentId) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Agent ID missing in referral link" });
-//     }
-
-//     // ✅ verify that the agentId exists in the user collection
-//     const partner = await UserModel.findOne({ agentId });
-//     if (!partner) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Invalid agent ID" });
-//     }
-
-//     // ✅ Save agentId & partner name to client form
-//     formData.agentId = agentId;
-//     formData.partnerName = partner.name;
-
-//     const form = new carrerForm(formData);
+//     const form = new CareerForm(completeData);
 //     await form.save();
 
 //     res.status(201).json({
@@ -207,34 +48,76 @@
 //       form,
 //     });
 //   } catch (error) {
-//     console.error("Error submitting form:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to submit form", error });
+//     console.error("❌ Error submitting form:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to submit form",
+//       error: error.message,
+//     });
 //   }
 // };
 
-// // 🟢 Get all forms (Admin & Partner)
+// // 🟢 Get all forms (Admin & Partner) — with pagination
+// // 🟢 Get all forms (Admin & Partner) — smart pagination
 // export const getAllForms = async (req, res) => {
 //   try {
-//     const forms = await carrerForm.find().sort({ createdAt: -1 });
+//     const page = req.query.page ? parseInt(req.query.page) : null;
+//     const limit = req.query.limit ? parseInt(req.query.limit) : null;
 
-//     if (!forms || forms.length === 0) {
-//       return res.status(200).json([]);
+//     console.log("📨 GET /api/carrer-form", req.query);
+
+//     let forms;
+
+//     if (page && limit) {
+//       // ✅ Use pagination only if query params exist
+//       const skip = (page - 1) * limit;
+//       const totalForms = await CareerForm.countDocuments();
+
+//       forms = await CareerForm.find()
+//         .sort({ createdAt: -1 })
+//         .skip(skip)
+//         .limit(limit);
+
+//       const formattedForms = forms.map((form) => ({
+//         ...form._doc,
+//         createdAt: formatIST(form.createdAt),
+//         updatedAt: formatIST(form.updatedAt),
+//       }));
+
+//       return res.status(200).json({
+//         success: true,
+//         message: "Forms fetched successfully (paginated)",
+//         data: formattedForms,
+//         currentPage: page,
+//         totalPages: Math.ceil(totalForms / limit),
+//         totalForms,
+//       });
+//     } else {
+//       // ✅ No pagination — return ALL students
+//       forms = await CareerForm.find().sort({ createdAt: -1 });
+
+//       const formattedForms = forms.map((form) => ({
+//         ...form._doc,
+//         createdAt: form.createdAt, // raw date
+//         updatedAt: form.updatedAt, // raw date
+//       }));
+
+//       console.log("📦 Returning all forms:", formattedForms.length);
+
+//       return res.status(200).json({
+//         success: true,
+//         message: "All forms fetched successfully (no pagination)",
+//         data: formattedForms,
+//         totalForms: formattedForms.length,
+//       });
 //     }
-
-//     const formattedForms = forms.map((form) => ({
-//       ...form._doc,
-//       createdAt: formatIST(form.createdAt),
-//       updatedAt: formatIST(form.updatedAt),
-//     }));
-
-//     res.status(200).json(formattedForms);
 //   } catch (error) {
-//     console.error("Error fetching forms:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to fetch forms", error });
+//     console.error("❌ Error fetching forms:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch forms",
+//       error: error.message,
+//     });
 //   }
 // };
 
@@ -242,7 +125,8 @@
 // export const getClientsByAgent = async (req, res) => {
 //   try {
 //     const { agentId } = req.params;
-//     const clients = await carrerForm.find({ agentId }).sort({ createdAt: -1 });
+//     const clients = await CareerForm.find({ agentId }).sort({ createdAt: -1 });
+
 //     res.status(200).json({ success: true, data: clients });
 //   } catch (error) {
 //     res.status(500).json({ success: false, message: error.message });
@@ -252,7 +136,7 @@
 // // 🟢 Get single form by ID
 // export const getFormById = async (req, res) => {
 //   try {
-//     const form = await carrerForm.findById(req.params.id);
+//     const form = await CareerForm.findById(req.params.id);
 //     if (!form)
 //       return res
 //         .status(404)
@@ -266,18 +150,23 @@
 //     res.status(200).json(formattedForm);
 //   } catch (error) {
 //     console.error("Error fetching form:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to fetch form", error });
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch form",
+//       error: error.message,
+//     });
 //   }
 // };
 
 // // 🟢 Update client details (generic)
 // export const updateClientDetails = async (req, res) => {
 //   try {
-//     const updated = await carrerForm.findByIdAndUpdate(req.params.id, req.body, {
-//       new: true,
-//     });
+//     const updated = await CareerForm.findByIdAndUpdate(
+//       req.params.id,
+//       req.body,
+//       { new: true }
+//     );
+
 //     if (!updated)
 //       return res
 //         .status(404)
@@ -290,9 +179,11 @@
 //     });
 //   } catch (error) {
 //     console.error("Error updating client:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to update client", error });
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to update client",
+//       error: error.message,
+//     });
 //   }
 // };
 
@@ -302,15 +193,12 @@
 //     const { id } = req.params;
 //     const updatedData = req.body;
 
-//     console.log("🟢 Update request for:", id);
-//     console.log("📦 Data:", updatedData);
-
-//     const form = await carrerForm.findById(id);
+//     const form = await CareerForm.findById(id);
 //     if (!form) {
 //       return res.status(404).json({ message: "Form not found" });
 //     }
 
-//     // ✅ Save new update in adminUpdates history array
+//     // ✅ Record admin updates (History)
 //     const adminUpdate = {
 //       date: new Date(),
 //       adminStatus: updatedData.adminStatus || "",
@@ -321,7 +209,13 @@
 
 //     form.adminUpdates.push(adminUpdate);
 
-//     // ✅ Also update the latest fields
+//     // ✅ CRITICAL FIX: Save connectionStatus if provided
+//     // The frontend sends 'connectionStatus', so we must catch it here!
+//     if (updatedData.connectionStatus) {
+//         form.connectionStatus = updatedData.connectionStatus;
+//     }
+    
+//     // Update other admin fields
 //     form.adminStatus = updatedData.adminStatus || form.adminStatus;
 //     form.adminRemarks = updatedData.adminRemarks || form.adminRemarks;
 //     form.adminRemarks2 = updatedData.adminRemarks2 || form.adminRemarks2;
@@ -343,21 +237,30 @@
 // // 🟢 Delete form
 // export const deleteForm = async (req, res) => {
 //   try {
-//     const deleted = await carrerForm.findByIdAndDelete(req.params.id);
+//     const deleted = await CareerForm.findByIdAndDelete(req.params.id);
 //     if (!deleted)
 //       return res
 //         .status(404)
 //         .json({ success: false, message: "Form not found" });
+
 //     res
 //       .status(200)
 //       .json({ success: true, message: "Form deleted successfully" });
 //   } catch (error) {
 //     console.error("Error deleting form:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to delete form", error });
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to delete form",
+//       error: error.message,
+//     });
 //   }
 // };
+
+
+
+
+
+
 
 console.log("🧩 Using Controller File: CarrerFormController.js (ACTIVE)");
 
@@ -365,7 +268,19 @@ import CareerForm from "../Models/CarrerFormModel.js";
 import { formatIST } from "../utils/TimeFormat.js";
 import UserModel from "../Models/UserModel.js";
 
-// 🟢 Submit new form (Frontend form submission)
+/* -----------------------------------------------
+   Helper: get today's start & end
+----------------------------------------------- */
+const getTodayRange = () => {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return { startOfToday, endOfToday };
+};
+
+/* -----------------------------------------------
+   🟢 Submit new form (Frontend form submission)
+----------------------------------------------- */
 export const submitCareerForm = async (req, res) => {
   try {
     const { agentId } = req.query;
@@ -387,13 +302,11 @@ export const submitCareerForm = async (req, res) => {
         .json({ success: false, message: "Invalid agent ID" });
     }
 
-    // ✅ Merge course + subcourse properly
     const mergedCourse = formData.q7_preferredDomain;
 
-    // ✅ Prepare data for DB
     const completeData = {
       ...formData,
-      q7_preferredDomain: mergedCourse, // 👈 merged result stored
+      q7_preferredDomain: mergedCourse,
       agentId,
       partnerName: partner.name,
     };
@@ -418,8 +331,9 @@ export const submitCareerForm = async (req, res) => {
   }
 };
 
-// 🟢 Get all forms (Admin & Partner) — with pagination
-// 🟢 Get all forms (Admin & Partner) — smart pagination
+/* -----------------------------------------------
+   🟢 Get all forms (Admin & Partner)
+----------------------------------------------- */
 export const getAllForms = async (req, res) => {
   try {
     const page = req.query.page ? parseInt(req.query.page) : null;
@@ -430,7 +344,6 @@ export const getAllForms = async (req, res) => {
     let forms;
 
     if (page && limit) {
-      // ✅ Use pagination only if query params exist
       const skip = (page - 1) * limit;
       const totalForms = await CareerForm.countDocuments();
 
@@ -454,13 +367,12 @@ export const getAllForms = async (req, res) => {
         totalForms,
       });
     } else {
-      // ✅ No pagination — return ALL students
       forms = await CareerForm.find().sort({ createdAt: -1 });
 
       const formattedForms = forms.map((form) => ({
         ...form._doc,
-        createdAt: form.createdAt, // raw date
-        updatedAt: form.updatedAt, // raw date
+        createdAt: form.createdAt,
+        updatedAt: form.updatedAt,
       }));
 
       console.log("📦 Returning all forms:", formattedForms.length);
@@ -482,7 +394,9 @@ export const getAllForms = async (req, res) => {
   }
 };
 
-// 🟢 Get all clients by agent (Partner dashboard)
+/* -----------------------------------------------
+   🟢 Get all clients by agent (Partner dashboard)
+----------------------------------------------- */
 export const getClientsByAgent = async (req, res) => {
   try {
     const { agentId } = req.params;
@@ -494,7 +408,9 @@ export const getClientsByAgent = async (req, res) => {
   }
 };
 
-// 🟢 Get single form by ID
+/* -----------------------------------------------
+   🟢 Get single form by ID
+----------------------------------------------- */
 export const getFormById = async (req, res) => {
   try {
     const form = await CareerForm.findById(req.params.id);
@@ -519,7 +435,9 @@ export const getFormById = async (req, res) => {
   }
 };
 
-// 🟢 Update client details (generic)
+/* -----------------------------------------------
+   🟢 Update client details (generic)
+----------------------------------------------- */
 export const updateClientDetails = async (req, res) => {
   try {
     const updated = await CareerForm.findByIdAndUpdate(
@@ -548,7 +466,9 @@ export const updateClientDetails = async (req, res) => {
   }
 };
 
-// 🟢 Admin update (save latest + push to history)
+/* -----------------------------------------------
+   🟢 Admin update (main follow-up update)
+----------------------------------------------- */
 export const updateCareerForm = async (req, res) => {
   try {
     const { id } = req.params;
@@ -562,25 +482,34 @@ export const updateCareerForm = async (req, res) => {
     // ✅ Record admin updates (History)
     const adminUpdate = {
       date: new Date(),
-      adminStatus: updatedData.adminStatus || "",
-      adminRemarks: updatedData.adminRemarks || "",
-      adminRemarks2: updatedData.adminRemarks2 || "",
-      followUpDate: updatedData.followUpDate || null,
+      adminStatus: updatedData.adminStatus || form.adminStatus || "",
+      adminRemarks: updatedData.adminRemarks ?? form.adminRemarks ?? "",
+      adminRemarks2: updatedData.adminRemarks2 ?? form.adminRemarks2 ?? "",
+      followUpDate: updatedData.followUpDate || form.followUpDate || null,
     };
 
     form.adminUpdates.push(adminUpdate);
 
-    // ✅ CRITICAL FIX: Save connectionStatus if provided
-    // The frontend sends 'connectionStatus', so we must catch it here!
+    // ✅ Store connectionStatus if provided
     if (updatedData.connectionStatus) {
-        form.connectionStatus = updatedData.connectionStatus;
+      form.connectionStatus = updatedData.connectionStatus;
     }
-    
-    // Update other admin fields
-    form.adminStatus = updatedData.adminStatus || form.adminStatus;
-    form.adminRemarks = updatedData.adminRemarks || form.adminRemarks;
-    form.adminRemarks2 = updatedData.adminRemarks2 || form.adminRemarks2;
-    form.followUpDate = updatedData.followUpDate || form.followUpDate;
+
+    // ✅ Update main admin fields
+    if (updatedData.adminStatus) {
+      form.adminStatus = updatedData.adminStatus;
+    }
+    if (updatedData.adminRemarks !== undefined) {
+      form.adminRemarks = updatedData.adminRemarks;
+    }
+    if (updatedData.adminRemarks2 !== undefined) {
+      form.adminRemarks2 = updatedData.adminRemarks2;
+    }
+    if (updatedData.followUpDate !== undefined) {
+      form.followUpDate = updatedData.followUpDate
+        ? new Date(updatedData.followUpDate)
+        : null;
+    }
 
     await form.save();
 
@@ -595,7 +524,9 @@ export const updateCareerForm = async (req, res) => {
   }
 };
 
-// 🟢 Delete form
+/* -----------------------------------------------
+   🟢 Delete form
+----------------------------------------------- */
 export const deleteForm = async (req, res) => {
   try {
     const deleted = await CareerForm.findByIdAndDelete(req.params.id);
@@ -612,6 +543,111 @@ export const deleteForm = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to delete form",
+      error: error.message,
+    });
+  }
+};
+
+/* ==================================================
+   🔔 FOLLOW-UP SECTION APIS
+   - Today
+   - Upcoming
+   - Pending
+   - Do Not Follow Up
+================================================== */
+
+// 📌 Get today's follow-ups
+export const getTodayFollowUps = async (req, res) => {
+  try {
+    const { startOfToday, endOfToday } = getTodayRange();
+
+    const forms = await CareerForm.find({
+      followUpDate: { $ne: null, $gte: startOfToday, $lt: endOfToday },
+      adminStatus: { $ne: "Do Not Call Again" },
+    }).sort({ followUpDate: 1, createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Today's follow-ups fetched",
+      data: forms,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching today's follow-ups:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch today's follow-ups",
+      error: error.message,
+    });
+  }
+};
+
+// 📌 Get upcoming follow-ups (future)
+export const getUpcomingFollowUps = async (req, res) => {
+  try {
+    const { endOfToday } = getTodayRange();
+
+    const forms = await CareerForm.find({
+      followUpDate: { $ne: null, $gte: endOfToday },
+      adminStatus: { $ne: "Do Not Call Again" },
+    }).sort({ followUpDate: 1, createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Upcoming follow-ups fetched",
+      data: forms,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching upcoming follow-ups:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch upcoming follow-ups",
+      error: error.message,
+    });
+  }
+};
+
+// 📌 Get pending follow-ups (missed date)
+export const getPendingFollowUps = async (req, res) => {
+  try {
+    const { startOfToday } = getTodayRange();
+
+    const forms = await CareerForm.find({
+      followUpDate: { $ne: null, $lt: startOfToday },
+      adminStatus: { $ne: "Do Not Call Again" },
+    }).sort({ followUpDate: 1, createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Pending follow-ups fetched",
+      data: forms,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching pending follow-ups:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch pending follow-ups",
+      error: error.message,
+    });
+  }
+};
+
+// 📌 Get "Do Not Follow Up" list
+export const getDoNotFollowUps = async (req, res) => {
+  try {
+    const forms = await CareerForm.find({
+      adminStatus: "Do Not Call Again",
+    }).sort({ updatedAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Do-not-follow-up list fetched",
+      data: forms,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching do-not-follow-up list:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch do-not-follow-up list",
       error: error.message,
     });
   }

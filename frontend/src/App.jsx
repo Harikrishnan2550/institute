@@ -32,7 +32,7 @@ import AdminClientTrack from "./Components/AdminClientTrack";
 import ClientDetails from "./Components/ClientDetails";
 import AdminWallet from "./Components/AdminWallet";
 import PartnerWallet from "./Components/PartnerWallet";
-
+ 
 // ✅ Career Form Pages
 import ClientPage from "./Components/ClientPage";
 import EditClientPage from "./Components/EditClientPage";
@@ -40,6 +40,7 @@ import EditClientPage from "./Components/EditClientPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PartnerClientsTable from "./Components/PartnerClientsTable";
+import FollowUp from "./Components/FollowUp";
 
 function App() {
   return (
@@ -105,6 +106,11 @@ function App() {
             </Layout>
           }
         />
+        <Route path="/admin/follow-up" 
+        element={
+        <Layout>
+        <FollowUp/>
+        </Layout>} />
 
         {/* ✅ Partner routes */}
         <Route
@@ -180,9 +186,8 @@ function App() {
       </Routes>
 
       <ToastContainer position="top-right" autoClose={3000} theme="colored" />
-      <footer/>
+      <footer />
     </Router>
-    
   );
 }
 

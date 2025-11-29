@@ -3,7 +3,11 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import mongoose from "mongoose"; // ✅ Added for cache control
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
 import connectDB from "./config/Mongodb.js";
 
 import CarrerFormRoutes from "./Routes/CarrerFormRoutes.js";
@@ -16,40 +20,44 @@ import walletRoutes from "./Routes/walletRoutes.js";
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
+const NODE_ENV = process.env.NODE_ENV || "development";
 
-// ✅ Fix ES Module __dirname and __filename
+// Fix dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/* ----------------------------------------------------
-   ✅ UNIVERSAL CORS FIX FOR RENDER + VERCEL
----------------------------------------------------- */
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:3000",
-  // ✅ ADDED: Your new live domains
+/* ---------------------------------------------
+   🔐 CORS — secure in production, open in dev
+--------------------------------------------- */
+const prodOrigins = [
   "https://bsofteducation.in",
   "https://student.bsofteducation.in",
-  "http://bsofteducation.in", 
-  "http://student.bsofteducation.in"
 ];
+
+const devOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:5174",
+];
+
+const allowedOrigins =
+  NODE_ENV === "production"
+    ? prodOrigins
+    : [...prodOrigins, ...devOrigins];
 
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("❌ Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
+        return callback(null, true);
       }
+      console.log("❌ Blocked by CORS:", origin);
+      callback(new Error("CORS blocked"));
     },
     credentials: true,
   })
 );
 
-// ✅ Explicit CORS headers
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
@@ -57,45 +65,46 @@ app.use((req, res, next) => {
   next();
 });
 
-/* ----------------------------------------------------
-   ✅ Express Setup
----------------------------------------------------- */
+/* ---------------------------------------------
+   🔰 Security Middlewares
+--------------------------------------------- */
+app.use(helmet());
+app.use(cookieParser());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: "Too many requests. Please try again later.",
+});
+app.use(limiter);
+
+/* ---------------------------------------------
+   📦 Request Body & Static
+--------------------------------------------- */
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// ✅ Serve uploads properly (for Render + local)
 const uploadsPath = path.resolve(__dirname, "uploads");
 app.use("/uploads", express.static(uploadsPath));
-console.log("🖼️ Serving static files from:", uploadsPath);
 
-/* ----------------------------------------------------
-   ✅ MongoDB Connection
----------------------------------------------------- */
+/* ---------------------------------------------
+   🧠 Database
+--------------------------------------------- */
 connectDB();
 
-// 🧠 Auto model cache cleaner (fix old schema issue)
-mongoose.connection.once("open", async () => {
-  try {
-    console.log("🧹 Clearing Mongoose model cache...");
-    delete mongoose.models["CareerForm"];
-    delete mongoose.connection.models["CareerForm"];
-    console.log("✅ CareerForm model cache cleared successfully!");
-  } catch (err) {
-    console.log("⚠️ Error clearing model cache:", err.message);
-  }
-});
-
-/* ----------------------------------------------------
-   ✅ Log all requests for debugging
----------------------------------------------------- */
+/* ---------------------------------------------
+   🔍 Log requests (only in development)
+--------------------------------------------- */
 app.use((req, res, next) => {
-  console.log(`📨 ${req.method} request to ${req.url}`);
+  if (NODE_ENV !== "production") {
+    console.log(`📨 ${req.method} -> ${req.url}`);
+  }
   next();
 });
 
-/* ----------------------------------------------------
-   ✅ Routes
----------------------------------------------------- */
+/* ---------------------------------------------
+   🚏 Routes
+--------------------------------------------- */
 app.use("/api/carrer-form", CarrerFormRoutes);
 app.use("/api/user", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
@@ -103,11 +112,11 @@ app.use("/api/partners", partnerRoutes);
 app.use("/api/client-status", clientStatusRoutes);
 app.use("/api/wallet", walletRoutes);
 
-/* ----------------------------------------------------
-   ✅ Root + Error Handlers
----------------------------------------------------- */
+/* ---------------------------------------------
+   🌍 Root + 404 + Errors
+--------------------------------------------- */
 app.get("/", (req, res) => {
-  res.send("🚀 API is running successfully on Render!");
+  res.send("🚀 API is running securely!");
 });
 
 app.use((req, res) => {
@@ -115,13 +124,13 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error("❌ Server Error:", err.message);
-  res.status(500).json({ success: false, message: err.message });
+  console.error("❌ Server Error:", err);
+  res.status(500).json({ success: false, message: "Internal Server Error" });
 });
 
-/* ----------------------------------------------------
-   ✅ Start Server
----------------------------------------------------- */
+/* ---------------------------------------------
+   🚀 Start Server
+--------------------------------------------- */
 app.listen(port, () => {
-  console.log(`✅ Server is running on port ${port}`);
+  console.log(`🔥 Server running on port ${port} in ${NODE_ENV} mode`);
 });
