@@ -32,7 +32,7 @@ export default function EditFollowUpModal({ client, onClose, onUpdated }) {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="w-full mt-1 mb-4 p-3 rounded-xl bg-white/10 text-white border border-emerald-500/30"
+          className="w-full mt-1 mb-4 p-3 rounded-xl bg-white/40 text-black border border-emerald-500/30"
         >
           <option value="Call Later">Call Later</option>
           <option value="Whatsapp Follow Up">Whatsapp Follow Up</option>

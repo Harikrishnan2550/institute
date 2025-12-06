@@ -1034,7 +1034,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "../api/axios";
 import { qustions } from "../assets/Qustions";
 import { IndianStates } from "../assets/IndianStates";
-import { SubCourses } from "../assets/Qustions"; // ✅ Using same file
+import { SubCourses } from "../assets/Qustions"; 
 
 export default function GetStarted() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -1054,7 +1054,6 @@ export default function GetStarted() {
 
   const totalSteps = qustions.length + 1;
 
-  // ✅ Capture agentId or studentid from URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const agentParam = urlParams.get("agentId") || urlParams.get("studentid");
@@ -1064,107 +1063,94 @@ export default function GetStarted() {
       setAgentId(agentParam);
     } else {
       console.warn("⚠️ No agentId found in URL — using default for local test");
-      setAgentId("AGT-0009"); // ✅ Fallback for local testing
+      setAgentId("AGT-0009");
     }
   }, []);
 
-  // ✅ Handle Next / Submit
   const handleNext = async () => {
-  // 🔥 Always read latest subcourse directly from DOM
-  const subcourseFromDOM = document.querySelector("#subcourse-select")?.value;
+    const subcourseFromDOM = document.querySelector("#subcourse-select")?.value;
 
-  // ---- FINAL SUBMISSION ---- //
-  if (currentStep === totalSteps) {
-    setLoading(true);
+    if (currentStep === totalSteps) {
+      setLoading(true);
 
-    // 🔥 Guarantee correct subcourse (React state OR DOM)
-    const finalSubcourse =
-      selectedOptions.subCourse || subcourseFromDOM || "";
+      const finalSubcourse =
+        selectedOptions.subCourse || subcourseFromDOM || "";
 
-    // 🔥 Merge Domain + Subcourse into “Course (Subcourse)” format
-    const mergedCourse =
-      selectedOptions[7] && finalSubcourse
-        ? `${selectedOptions[7]} (${finalSubcourse})`
-        : selectedOptions[7] || "";
+      const mergedCourse =
+        selectedOptions[7] && finalSubcourse
+          ? `${selectedOptions[7]} (${finalSubcourse})`
+          : selectedOptions[7] || "";
 
-    const payload = {
-      q1_experienceLevel: selectedOptions[1],
-      q2_previousITExperience: selectedOptions[2],
-      q2_previousRole: selectedOptions.role || "",
-      q3_education: selectedOptions[3],
-      q4_yearOfPassing: selectedOptions[4],
-      q5_interestArea: selectedOptions[5],
-      q6_jobAwareness: selectedOptions[6],
+      const payload = {
+        q1_experienceLevel: selectedOptions[1],
+        q2_previousITExperience: selectedOptions[2],
+        q2_previousRole: selectedOptions.role || "",
+        q3_education: selectedOptions[3],
+        q4_yearOfPassing: selectedOptions[4],
+        q5_interestArea: selectedOptions[5],
+        q6_jobAwareness: selectedOptions[6],
+        q7_preferredDomain: mergedCourse,
+        q8_careerGoal: selectedOptions[8],
+        q9_trainingTime: selectedOptions[9],
+        q10_guidanceCall: selectedOptions[10],
+        name: personalDetails.name,
+        email: personalDetails.email,
+        whatsappNumber: personalDetails.whatsapp,
+        alternativeNumber: personalDetails.alternate,
+        state: personalDetails.state,
+        city: personalDetails.city,
+        language: personalDetails.language,
+        agentId,
+      };
 
-      q7_preferredDomain: mergedCourse, // 🔥 FIXED
+      console.log("📦 FINAL PAYLOAD:", payload);
 
-      q8_careerGoal: selectedOptions[8],
-      q9_trainingTime: selectedOptions[9],
-      q10_guidanceCall: selectedOptions[10],
+      try {
+        const testAgent = agentId || "AGT-0009";
+        const endpoint = `/api/carrer-form/submit?agentId=${testAgent}`;
+        const res = await axiosInstance.post(endpoint, payload);
+        console.log("✅ Form submitted:", res.data);
 
-      name: personalDetails.name,
-      email: personalDetails.email,
-      whatsappNumber: personalDetails.whatsapp,
-      alternativeNumber: personalDetails.alternate,
-      state: personalDetails.state,
-      city: personalDetails.city,
-      language: personalDetails.language,
-      agentId,
-    };
+        setShowPopup(true);
+        setTimeout(() => setShowPopup(false), 4000);
+      } catch (error) {
+        console.error("❌ Submission failed:", error);
+        alert(error?.response?.data?.message || "Submission failed.");
+      } finally {
+        setLoading(false);
+      }
 
-    console.log("📦 FINAL PAYLOAD:", payload);
-
-    try {
-      const testAgent = agentId || "AGT-0009";
-      const endpoint = `/api/carrer-form/submit?agentId=${testAgent}`;
-      const res = await axiosInstance.post(endpoint, payload);
-      console.log("✅ Form submitted:", res.data);
-
-      setShowPopup(true);
-      setTimeout(() => setShowPopup(false), 4000);
-    } catch (error) {
-      console.error("❌ Submission failed:", error);
-      alert(error?.response?.data?.message || "Submission failed.");
-    } finally {
-      setLoading(false);
+      return;
     }
 
-    return;
-  }
+    const currentQ = qustions[currentStep - 1];
 
-  // ---- VALIDATION BEFORE GOING NEXT ---- //
-  const currentQ = qustions[currentStep - 1];
+    if (currentStep <= qustions.length) {
+      if (currentStep === 7) {
+        const domain = selectedOptions[7];
+        const finalSub = selectedOptions.subCourse || subcourseFromDOM;
 
-  if (currentStep <= qustions.length) {
-    // 🔥 Step 7 (Domain + Subcourse)
-    if (currentStep === 7) {
-      const domain = selectedOptions[7];
-      const finalSub = selectedOptions.subCourse || subcourseFromDOM;
+        if (SubCourses[domain] && (!finalSub || finalSub === "")) {
+          alert("Please select a subcourse before proceeding.");
+          return;
+        }
+      }
 
-      if (SubCourses[domain] && (!finalSub || finalSub === "")) {
-        alert("Please select a subcourse before proceeding.");
+      if (
+        (currentQ.type === "input" &&
+          (!selectedOptions[currentStep] ||
+            selectedOptions[currentStep].trim() === "")) ||
+        (currentQ.type === "button" &&
+          !selectedOptions[currentStep] &&
+          currentQ.id !== 2)
+      ) {
+        alert("Please complete this question.");
         return;
       }
     }
 
-    // 🔥 Normal validation
-    if (
-      (currentQ.type === "input" &&
-        (!selectedOptions[currentStep] ||
-          selectedOptions[currentStep].trim() === "")) ||
-      (currentQ.type === "button" &&
-        !selectedOptions[currentStep] &&
-        currentQ.id !== 2)
-    ) {
-      alert("Please complete this question.");
-      return;
-    }
-  }
-
-  // NEXT STEP
-  setCurrentStep((prev) => prev + 1);
-};
-
+    setCurrentStep((prev) => prev + 1);
+  };
 
   const previousStep = () => {
     if (currentStep > 1) setCurrentStep((prev) => prev - 1);
@@ -1293,17 +1279,7 @@ export default function GetStarted() {
               {currentQuestion.question}
             </h3>
 
-            {/* Skip Button */}
-            {currentStep === 1 && (
-              <div className="flex justify-center mb-6">
-                <button
-                  onClick={skipAllQuestions}
-                  className="px-6 py-2 bg-gray-100 text-gray-800 border border-gray-300 rounded-lg font-semibold shadow-sm hover:bg-gray-200 hover:shadow-md transition-all duration-200"
-                >
-                  ⏩ Skip All Questions
-                </button>
-              </div>
-            )}
+            {/* ❌ OLD SKIP BUTTON REMOVED FROM HERE */}
 
             {currentQuestion.type === "button" ? (
               <div className="flex justify-center w-full">
@@ -1324,10 +1300,9 @@ export default function GetStarted() {
                       }`}
                       onClick={() =>
                         setSelectedOptions((prev) => ({
-                                     ...prev,
-                            [currentStep]: option,
-                                    }))
-
+                          ...prev,
+                          [currentStep]: option,
+                        }))
                       }
                     >
                       {option}
@@ -1376,7 +1351,7 @@ export default function GetStarted() {
                   className="flex justify-center mt-6"
                 >
                   <select
-                    id="subcourse-select" // 🔥 Needed for DOM extraction
+                    id="subcourse-select"
                     value={selectedOptions.subCourse || ""}
                     onChange={(e) =>
                       setSelectedOptions((prev) => ({
@@ -1508,6 +1483,21 @@ export default function GetStarted() {
             : "Next"}
         </button>
       </div>
+
+      {/* ✅ NEW SKIP BUTTON (Hidden on Step 1, Visible from Step 2 onwards) */}
+      {currentStep > 1 && currentStep <= qustions.length && (
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={skipAllQuestions}
+            className="group flex items-center gap-2 text-gray-500 hover:text-green-700 transition-colors text-sm font-medium"
+          >
+            Skip all questions
+            <span className="transform group-hover:translate-x-1 transition-transform">
+              →
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

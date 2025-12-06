@@ -289,7 +289,7 @@ const ClientDetails = () => {
                 name="adminStatus"
                 value={form.adminStatus}
                 onChange={handleChange}
-                className="bg-white/10 backdrop-blur-sm border-2 border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 p-3 rounded-xl w-full transition-all outline-none text-sm sm:text-base text-white"
+                className="bg-white/10 backdrop-blur-sm border-2 border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 p-3 rounded-xl w-full transition-all outline-none text-sm sm:text-base text-black"
               >
                 <option value="">Select status</option>
                 <option value="New Lead">New Lead</option>

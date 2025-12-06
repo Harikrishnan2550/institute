@@ -2,17 +2,19 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../api/axios";
 import { toast } from "react-toastify";
-import { UserPlus, LogIn, Loader2, Mail, Lock, User } from "lucide-react";
+import { UserPlus, LogIn, Loader2, Mail, Lock, User, KeyRound } from "lucide-react";
 
 const LoginSignup = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Detect signup mode from URL (/?signup=true)
   const queryParams = new URLSearchParams(location.search);
   const isSignupParam = queryParams.get("signup") === "true";
 
   const [isLogin, setIsLogin] = useState(!isSignupParam);
+  const [isOtpStep, setIsOtpStep] = useState(false);
+  const [otp, setOtp] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,111 +23,96 @@ const LoginSignup = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Auto switch based on URL query (keeps sync when toggling back)
   useEffect(() => {
     setIsLogin(!isSignupParam);
   }, [isSignupParam]);
 
-  // ✅ Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Toggle between Login / Signup manually
   const toggleForm = () => {
+    if (isOtpStep) return; // ❗ Prevent navigating during OTP step
     setIsLogin(!isLogin);
     setError("");
-    if (isLogin) {
-      navigate("/?signup=true");
-    } else {
-      navigate("/");
-    }
+    if (isLogin) navigate("/?signup=true");
+    else navigate("/");
   };
 
-  // ✅ Submit Login / Signup form
+  // 🔥 Submit Login / Signup / OTP
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
+    // OTP STEP FIRST
+    if (isOtpStep) {
+      try {
+        const { email } = formData;
+        const response = await axiosInstance.post("/user/verify-otp", { email, otp });
+
+        const token = response.data?.token;
+        const role = response.data?.role;
+
+        if (!token) throw new Error("Token not found");
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
+
+        toast.success("Admin verified successfully 🎉");
+        navigate("/admin/dashboard");
+      } catch (err) {
+        const msg = err?.response?.data?.message || "Invalid OTP";
+        setError(msg);
+        toast.error(msg);
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Normal Login / Signup
     const endpoint = isLogin ? "/user/login" : "/user/register";
-    const { name, email, password } = formData;
-    const payload = isLogin ? { email, password } : { name, email, password };
+    const payload = isLogin
+      ? { email: formData.email, password: formData.password }
+      : { ...formData };
 
     try {
       const response = await axiosInstance.post(endpoint, payload);
+      const role = response.data?.role || response.data?.user?.role;
 
-      // 🔎 Debug: print full response payload
-      console.log("🧠 FULL LOGIN/SIGNUP RESPONSE:", response);
-      console.log("🧠 response.data:", response.data);
-
-      // Robust token extraction (covers various backend response shapes)
-      const token =
-        response.data?.token ||
-        response.data?.data?.token ||
-        response.data?.user?.token ||
-        response.data?.data?.user?.token ||
-        response.data?.tokenString; // extra fallback if named differently
-
-      // If JWT included inside user object (common)
-      const userFromResponse =
-        response.data?.user ||
-        response.data?.data?.user ||
-        response.data?.data ||
-        response.data;
-
-      const role =
-        response.data?.user?.role ||
-        response.data?.role ||
-        userFromResponse?.role;
-      const agentId = userFromResponse?.agentId || response.data?.agentId;
-
-      console.log("🧩 Extracted token:", token);
-      console.log("🧩 Extracted role:", role, "agentId:", agentId);
-
-      if (!token) {
-        // Show backend message if exists
-        const backendMessage =
-          response.data?.message ||
-          response.data?.data?.message ||
-          (typeof response.data === "string" ? response.data : null) ||
-          "No token received from backend";
-        setError(backendMessage);
-        toast.error(backendMessage);
+      // 🔥 ADMIN — require OTP after password success
+      if (role === "admin" && response.data?.otpSent) {
+        toast.info("OTP sent to admin email 📩");
+        setIsOtpStep(true);
         setIsLoading(false);
         return;
       }
 
-      // Save token + role + agentId
+      // Partner → normal login
+      const token = response.data?.token;
+      const agentId = response.data?.user?.agentId;
+
+      if (!token) throw new Error("Token not found");
+
       localStorage.setItem("token", token);
-      if (role) localStorage.setItem("role", role);
-      if (role === "partner" && agentId)
-        localStorage.setItem("agentId", agentId);
+      localStorage.setItem("role", role);
+      if (role === "partner" && agentId) localStorage.setItem("agentId", agentId);
 
       toast.success(isLogin ? "Logged in successfully!" : "Account created!");
-      if (role === "admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/partner/dashboard");
-      }
-    } catch (err) {
-      console.error("Login/Signup Error (network/axios):", err);
 
-      let serverMessage =
+      if (role === "admin") navigate("/admin/dashboard");
+      else navigate("/partner/dashboard");
+    } catch (err) {
+      const msg =
         err?.response?.data?.message ||
-        err?.response?.data?.error ||
         err?.response?.data ||
         err?.message ||
         "Login failed";
 
-      // REMOVE ALL HTML TAGS (important fix)
-      serverMessage = String(serverMessage)
-        .replace(/<[^>]*>/g, "")
-        .slice(0, 200);
-
-      setError(serverMessage);
-      toast.error(serverMessage);
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -142,28 +129,37 @@ const LoginSignup = () => {
         ></div>
       </div>
 
-      {/* Glass Form Card */}
+      {/* Card */}
       <div className="relative bg-white/5 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/10 p-8 w-full max-w-md transition-all duration-500 hover:shadow-emerald-500/20">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg mb-4">
-            {isLogin ? (
+            {isOtpStep ? (
+              <KeyRound className="w-8 h-8 text-white" />
+            ) : isLogin ? (
               <LogIn className="w-8 h-8 text-white" />
             ) : (
               <UserPlus className="w-8 h-8 text-white" />
             )}
           </div>
+
           <h2 className="text-3xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-            {isLogin ? "Welcome Back" : "Join Us"}
+            {isOtpStep
+              ? "Verify OTP"
+              : isLogin
+              ? "Welcome Back"
+              : "Join Us"}
           </h2>
           <p className="text-white/60 mt-2 text-sm">
-            {isLogin ? "Log in to your account" : "Create your account"}
+            {isOtpStep
+              ? "Enter the 6-digit OTP sent to admin email"
+              : isLogin
+              ? "Log in to your account"
+              : "Create your account"}
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {!isLogin && (
+          {!isLogin && !isOtpStep && (
             <FloatingInput
               icon={<User className="w-5 h-5" />}
               type="text"
@@ -175,25 +171,41 @@ const LoginSignup = () => {
             />
           )}
 
-          <FloatingInput
-            icon={<Mail className="w-5 h-5" />}
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email Address"
-            required
-          />
+          {!isOtpStep && (
+            <>
+              <FloatingInput
+                icon={<Mail className="w-5 h-5" />}
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Email Address"
+                required
+              />
 
-          <FloatingInput
-            icon={<Lock className="w-5 h-5" />}
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Password"
-            required
-          />
+              <FloatingInput
+                icon={<Lock className="w-5 h-5" />}
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Password"
+                required
+              />
+            </>
+          )}
+
+          {isOtpStep && (
+            <FloatingInput
+              icon={<KeyRound className="w-5 h-5" />}
+              type="text"
+              name="otp"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter OTP"
+              required
+            />
+          )}
 
           {error && (
             <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm text-center backdrop-blur-sm">
@@ -211,38 +223,46 @@ const LoginSignup = () => {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  {isLogin ? (
+                  {isOtpStep ? (
+                    <KeyRound className="w-5 h-5" />
+                  ) : isLogin ? (
                     <LogIn className="w-5 h-5" />
                   ) : (
                     <UserPlus className="w-5 h-5" />
                   )}
-                  <span>{isLogin ? "Login" : "Sign Up"}</span>
+                  <span>
+                    {isOtpStep
+                      ? "Verify OTP"
+                      : isLogin
+                      ? "Login"
+                      : "Sign Up"}
+                  </span>
                 </>
               )}
             </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
           </button>
         </form>
 
-        {/* Toggle Link */}
-        <div className="text-center mt-8">
-          <p className="text-white/60 text-sm">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}
-            <button
-              onClick={toggleForm}
-              className="ml-2 text-emerald-400 font-bold hover:text-emerald-300 transition-colors relative"
-            >
-              {isLogin ? "Sign Up" : "Login"}
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-400 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-            </button>
-          </p>
-        </div>
+        {/* Toggle Signup/Login */}
+        {!isOtpStep && (
+          <div className="text-center mt-8">
+            <p className="text-white/60 text-sm">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              <button
+                onClick={toggleForm}
+                className="ml-2 text-emerald-400 font-bold hover:text-emerald-300 transition-colors"
+              >
+                {isLogin ? "Sign Up" : "Login"}
+              </button>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-// ✅ Floating Label Input Component
+// Floating Input Component
 const FloatingInput = ({
   icon,
   type,
