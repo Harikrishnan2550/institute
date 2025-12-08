@@ -3,16 +3,16 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../Models/UserModel.js";
 import Wallet from "../Models/WalletModel.js";
-import sendEmail from "../Utils/sendEmail.js"; // ✅ NEW: email utility
+import sendEmail from "../Utils/sendEmail.js"; // email utility
 
-// ✅ In-memory store for admin OTP (per email)
+// In-memory store for admin OTP
 let adminOtpStore = {
   email: null,
   otp: null,
   expiresAt: null,
 };
 
-// ✅ Helper: Generate unique incremental Agent ID safely
+// Helper: Generate unique incremental Agent ID safely
 const generateAgentId = async () => {
   const lastPartner = await User.findOne({ role: "partner" })
     .sort({ agentId: -1 })
@@ -27,7 +27,7 @@ const generateAgentId = async () => {
   return `AGT-${nextNumber}`;
 };
 
-// ✅ Register (Partner or Admin)
+// Register (Partner only)
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -37,7 +37,7 @@ export const register = async (req, res) => {
     }
 
     // Prevent creating admin manually
-    if (email === "admin@institute.com") {
+    if (email === process.env.EMAIL_USER) {
       return res.status(403).json({
         message: "Admin account cannot be created manually",
       });
@@ -61,7 +61,7 @@ export const register = async (req, res) => {
 
     await newUser.save();
 
-    // ✅ Automatically create wallet
+    // Automatically create wallet
     await Wallet.create({
       partnerId: newUser._id,
       totalRevenue: 0,
@@ -93,29 +93,26 @@ export const register = async (req, res) => {
   }
 };
 
-// ✅ Login (Admin or Partner)
-// Admin: email + password → OTP email → verify OTP → token
-// Partner: email + password → token directly (no OTP)
+// Login (Admin → OTP | Partner → Direct login)
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const ADMIN_EMAIL = "admin@institute.com";
+    const ADMIN_EMAIL = process.env.EMAIL_USER;
     const ADMIN_PASSWORD = "Admin@123";
 
-    // ✅ ADMIN LOGIN (password + OTP)
+    // Admin login (password + OTP)
     if (email === ADMIN_EMAIL) {
       if (password !== ADMIN_PASSWORD) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Generate 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
       adminOtpStore = {
         email: ADMIN_EMAIL,
         otp,
-        expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+        expiresAt: Date.now() + 5 * 60 * 1000,
       };
 
       try {
@@ -138,7 +135,7 @@ export const login = async (req, res) => {
       });
     }
 
-    // ✅ PARTNER LOGIN (no OTP)
+    // Partner login (no OTP)
     const user = await User.findOne({ email });
     if (!user)
       return res.status(404).json({ message: "User not found" });
@@ -169,11 +166,11 @@ export const login = async (req, res) => {
   }
 };
 
-// ✅ Verify Admin OTP → issue token
+// Verify Admin OTP → issue token
 export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    const ADMIN_EMAIL = "admin@institute.com";
+    const ADMIN_EMAIL = process.env.EMAIL_USER;
 
     if (!email || !otp) {
       return res.status(400).json({ message: "Email and OTP are required" });
@@ -196,7 +193,6 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // ✅ Success → clear OTP and issue token
     adminOtpStore = { email: null, otp: null, expiresAt: null };
 
     const token = jwt.sign(
@@ -216,7 +212,7 @@ export const verifyOtp = async (req, res) => {
   }
 };
 
-// ✅ Get user info from token
+// Get user info
 export const getUserInfo = async (req, res) => {
   try {
     res.status(200).json(req.user);
