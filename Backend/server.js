@@ -19,6 +19,7 @@ import walletRoutes from "./Routes/walletRoutes.js";
 
 dotenv.config();
 const app = express();
+app.set("trust proxy", 1);
 const port = process.env.PORT || 4000;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
