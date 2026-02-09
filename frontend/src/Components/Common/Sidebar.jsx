@@ -172,21 +172,34 @@ const Sidebar = () => {
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   // 🔥 Sidebar menu items
-  const menuItems = [
-    { title: "Dashboard", icon: <MdDashboard />, path: "dashboard" },
-    { title: "Client Track", icon: <FaUserFriends />, path: "client-track" },
-    { title: "Client Status", icon: <AiOutlineBarChart />, path: "client-status" },
-    { title: "Wallet", icon: <FaWallet />, path: "wallet" },
-    ...(isAdmin
-      ? [
-          {
-            title: "Follow Up",
-            icon: <RiCustomerService2Fill />,
-            path: "follow-up",
-          },
-        ]
-      : []),
-  ];
+const menuItems = [
+  { title: "Dashboard", icon: <MdDashboard />, path: "dashboard" },
+
+  // 👤 Partner Course Management
+  ...(!isAdmin
+    ? [{ title: "Courses", icon: <AiOutlineBarChart />, path: "courses" }]
+    : []),
+
+  // 🧑‍💼 Admin Course Analytics
+  ...(isAdmin
+    ? [{ title: "Courses", icon: <AiOutlineBarChart />, path: "courses" }]
+    : []),
+
+  { title: "Students Info", icon: <FaUserFriends />, path: "client-track" },
+  { title: "Students Status", icon: <AiOutlineBarChart />, path: "client-status" },
+  { title: "Wallet", icon: <FaWallet />, path: "wallet" },
+
+  ...(isAdmin
+    ? [
+        {
+          title: "Follow Up",
+          icon: <RiCustomerService2Fill />,
+          path: "follow-up",
+        },
+      ]
+    : []),
+];
+
 
   const baseRoute = isAdmin ? "/admin" : "/partner";
 

@@ -32,7 +32,9 @@ import AdminClientTrack from "./Components/AdminClientTrack";
 import ClientDetails from "./Components/ClientDetails";
 import AdminWallet from "./Components/AdminWallet";
 import PartnerWallet from "./Components/PartnerWallet";
- 
+import AdminCourses from "./Components/AdminCourses";
+import PartnerCourses from "./Components/PartnerCourses";
+
 // ✅ Career Form Pages
 import ClientPage from "./Components/ClientPage";
 import EditClientPage from "./Components/EditClientPage";
@@ -99,6 +101,24 @@ function App() {
           }
         />
         <Route
+          path="/admin/courses"
+          element={
+            <Layout>
+              <AdminCourses />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/partner/courses"
+          element={
+            <Layout>
+              <PartnerCourses />
+            </Layout>
+          }
+        />
+
+        <Route
           path="/admin/edit-client/:id"
           element={
             <Layout>
@@ -106,11 +126,14 @@ function App() {
             </Layout>
           }
         />
-        <Route path="/admin/follow-up" 
-        element={
-        <Layout>
-        <FollowUp/>
-        </Layout>} />
+        <Route
+          path="/admin/follow-up"
+          element={
+            <Layout>
+              <FollowUp />
+            </Layout>
+          }
+        />
 
         {/* ✅ Partner routes */}
         <Route

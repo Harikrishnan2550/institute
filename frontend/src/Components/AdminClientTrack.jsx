@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import { Calendar, Eye, RefreshCw } from "lucide-react";
+import { Calendar, Eye, RefreshCw, Search, Users, Filter } from "lucide-react";
 import { Pagination, Box } from "@mui/material";
 import axiosInstance from "../api/axios";
 
@@ -15,16 +15,17 @@ const AdminClientTrack = () => {
   const [limit, setLimit] = useState(10);
   const [totalClients, setTotalClients] = useState(0);
   const [selectedCourse, setSelectedCourse] = useState("All");
+
+  // Search States
+  const [searchName, setSearchName] = useState("");
+  const [searchEmail, setSearchEmail] = useState("");
+  const [searchPhone, setSearchPhone] = useState("");
+  const [searchInstitute, setSearchInstitute] = useState("");
+
   const navigate = useNavigate();
 
   const formatDateSafely = (value) => {
     if (!value) return "—";
-    const likelyFormatted =
-      typeof value === "string" &&
-      (/[AP]M|am|pm/.test(value) || /[a-zA-Z]{3,}/.test(value) || /\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/.test(value));
-
-    if (likelyFormatted) return value;
-
     const d = new Date(value);
     if (!isNaN(d.getTime())) {
       return d.toLocaleDateString("en-IN", {
@@ -36,127 +37,130 @@ const AdminClientTrack = () => {
     return value;
   };
 
-  // 🟢 Fetch clients
+  /* ---------------- FETCH PAGINATED CLIENTS ---------------- */
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          toast.error("Unauthorized: Please login again");
-          navigate("/login");
-          return;
-        }
-
         setLoading(true);
-
-        let url = "/carrer-form";
-        if (selectedCourse === "All") {
-          url = `/carrer-form?page=${page}&limit=${limit}`;
-        }
-
-        const res = await axiosInstance.get(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axiosInstance.get(
+          `/carrer-form?page=${page}&limit=${limit}`,
+        );
 
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-
         setClients(data);
-        if (selectedCourse === "All") {
-          setTotalClients(
-            res.data.totalForms ||
-              res.data.total ||
-              (Array.isArray(res.data) ? res.data.length : 0)
-          );
-        } else {
-          setTotalClients(data.length);
-        }
+        setTotalClients(res.data.totalForms || res.data.total || data.length);
       } catch (err) {
-        console.error("Error fetching clients:", err);
         toast.error("Failed to fetch clients");
       } finally {
         setLoading(false);
       }
     };
-
     fetchClients();
-  }, [page, limit, selectedCourse, navigate]);
+  }, [page, limit]);
 
-  // 🟢 Fetch ALL clients for filter
+  /* ---------------- FETCH ALL CLIENTS (for filtering) ---------------- */
   useEffect(() => {
-    const fetchAllClients = async () => {
+    const fetchAll = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axiosInstance.get("/carrer-form", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axiosInstance.get("/carrer-form");
         setAllClients(Array.isArray(res.data) ? res.data : res.data.data || []);
       } catch (err) {
-        console.error("Error fetching all clients:", err);
+        console.error(err);
       }
     };
-    fetchAllClients();
+    fetchAll();
   }, []);
 
-  const handleView = (client) => {
-    navigate(`/admin/client/${client._id}`, { state: { client } });
-  };
-
-  // 🟢 Update Status (The Critical Fix)
+  /* ---------------- UPDATE STATUS ---------------- */
   const handleStatusChange = async (clientId, newStatus) => {
     setUpdatingId(clientId);
     try {
-      const token = localStorage.getItem("token");
-      
-      // ✅ FIXED: Strictly updating 'connectionStatus' because that is what the dropdown controls
-      // and that is what exists in your Schema: connectionStatus: { enum: ["Connected", "Not Connected"] }
-      const payload = { connectionStatus: newStatus };
+      await axiosInstance.put(`/carrer-form/${clientId}`, {
+        connectionStatus: newStatus,
+      });
 
-      await axiosInstance.put(
-        `/carrer-form/${clientId}`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      toast.success("Status updated successfully!");
 
-      toast.success("Status updated successfully");
-      
-      // Update local state so UI reflects change immediately without refresh
       setClients((prev) =>
-        prev.map((c) => (c._id === clientId ? { ...c, connectionStatus: newStatus } : c))
+        prev.map((c) =>
+          c._id === clientId ? { ...c, connectionStatus: newStatus } : c,
+        ),
       );
-    } catch (err) {
-      console.error("Failed to update status:", err);
+    } catch {
       toast.error("Failed to update status");
     } finally {
       setUpdatingId(null);
     }
   };
 
+  /* ---------------- FILTER OPTIONS ---------------- */
   const uniqueCourses = useMemo(() => {
     const set = new Set(
-      allClients.map((c) => c.q7_preferredDomain).filter(Boolean)
+      allClients.map((c) => c.q7_preferredDomain).filter(Boolean),
     );
     return ["All", ...Array.from(set)];
   }, [allClients]);
 
-  const filteredClients =
-    selectedCourse === "All"
-      ? clients
-      : clients.filter(
-          (c) =>
-            c.q7_preferredDomain === selectedCourse ||
-            c.q7_subCourse === selectedCourse
-        );
+  /* ---------------- FILTER LOGIC ---------------- */
+  const filteredClients = useMemo(() => {
+    return clients.filter((c) => {
+      const matchCourse =
+        selectedCourse === "All" ||
+        c.q7_preferredDomain === selectedCourse ||
+        c.q7_subCourse === selectedCourse;
 
-  const filteredCount =
-    selectedCourse === "All" ? allClients.length : filteredClients.length;
+      const matchName =
+        !searchName || c.name?.toLowerCase().includes(searchName.toLowerCase());
 
-  const totalPages =
-    selectedCourse === "All" ? Math.ceil(totalClients / limit) : 1;
-  const handlePageChange = (event, value) => setPage(value);
+      const matchEmail =
+        !searchEmail ||
+        c.email?.toLowerCase().includes(searchEmail.toLowerCase());
 
-  if (loading)
+      const matchPhone =
+        !searchPhone || c.whatsappNumber?.includes(searchPhone);
+
+      const matchInstitute =
+        !searchInstitute ||
+        c.instituteName?.toLowerCase().includes(searchInstitute.toLowerCase());
+
+      return (
+        matchCourse && matchName && matchEmail && matchPhone && matchInstitute
+      );
+    });
+  }, [
+    clients,
+    selectedCourse,
+    searchName,
+    searchEmail,
+    searchPhone,
+    searchInstitute,
+  ]);
+
+  const totalPages = Math.ceil(totalClients / limit);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchName("");
+    setSearchEmail("");
+    setSearchPhone("");
+    setSearchInstitute("");
+    setSelectedCourse("All");
+  };
+
+  const hasActiveFilters =
+    searchName ||
+    searchEmail ||
+    searchPhone ||
+    searchInstitute ||
+    selectedCourse !== "All";
+  console.log("clients", clients.length);
+  console.log("allClients", allClients.length);
+  console.log("filtered", filteredClients.length);
+
+  /* ---------------- LOADING ---------------- */
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="relative inline-block">
             <div className="w-20 h-20 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
@@ -171,202 +175,376 @@ const AdminClientTrack = () => {
           <p className="mt-6 text-white/80 font-semibold text-lg tracking-wide">
             Loading clients...
           </p>
-        </div>
-      </div>
-    );
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Header & Filters */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
-      </div>
-
-      <div className="relative mb-10 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <h1 className="mt-5 overflow-visible leading-snug text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
-            Client Tracking
-          </h1>
-          <p className="text-emerald-300/80 mt-2 text-sm sm:text-base font-medium">
-            Manage and track all client interactions
-          </p>
-          <p className="text-emerald-400 mt-2 font-semibold">
-            {selectedCourse === "All"
-              ? `Total Students: ${filteredCount}`
-              : `${filteredCount} students interested in ${selectedCourse}`}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 mr-[300px]">
-          <label className="text-white/70 text-sm font-medium">
-            Filter by Course:
-          </label>
-          <select
-            value={selectedCourse}
-            onChange={(e) => {
-              setSelectedCourse(e.target.value);
-              setPage(1);
-            }}
-            className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
-          >
-            {uniqueCourses.map((course) => (
-              <option key={course} value={course} className="text-black">
-                {course}
-              </option>
-            ))}
-          </select>
-
-          <div className="flex items-center gap-2 ml-4">
-            <label className="text-white/70 text-sm font-medium">Rows:</label>
-            <select
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-              className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
-            >
-              {[10, 20, 50].map((size) => (
-                <option key={size} value={size} className="text-black">
-                  {size}
-                </option>
-              ))}
-            </select>
+          <div className="mt-2 flex items-center justify-center gap-1">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <div
+              className="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"
+              style={{ animationDelay: "0.4s" }}
+            ></div>
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Table */}
-      <motion.div
-        key={page + selectedCourse}
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="hidden lg:block bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
-      >
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-gradient-to-r from-emerald-600/20 to-teal-600/20">
-                {[
-                  "Date",
-                  "Name",
-                  "Email",
-                  "WhatsApp",
-                  "Course (Domain + Subcourse)",
-                  "Location",
-                  "Status",
-                  "Action",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="px-6 py-5 text-left text-sm font-bold text-white"
+  /* ---------------- MAIN UI ---------------- */
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 mt-2">
+      {/* Animated background blobs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
+      </div>
+
+      <div className="relative max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="bg-white/5 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/10 overflow-hidden">
+          {/* Header */}
+          <div className="relative bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 p-6 sm:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="relative flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-black text-white drop-shadow-lg">
+                  Client Tracking
+                </h1>
+                <p className="text-emerald-100 mt-2 text-sm sm:text-base font-medium">
+                  Monitor and manage all client interactions
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/30">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-white" />
+                    <div className="text-left">
+                      <p className="text-xs text-white/80 font-medium">
+                        Total Clients
+                      </p>
+                      <p className="text-xl font-black text-white">
+                        {totalClients}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 sm:p-8 lg:p-10">
+            {/* Filter Section */}
+            <div className="mb-8 bg-white/5 backdrop-blur-xl rounded-2xl shadow-xl border border-white/10 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                  <Filter className="w-5 h-5 text-emerald-400" />
+                  Search & Filter
+                </h2>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-sm text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-2 transition-colors"
                   >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {filteredClients.length > 0 ? (
-                filteredClients.map((client) => (
-                  <motion.tr
-                    key={client._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="hover:bg-white/5 transition-all duration-300"
+                    <RefreshCw className="w-4 h-4" />
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                <div>
+                  <label className="block text-emerald-300 text-xs font-bold mb-2">
+                    Search Name
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <input
+                      type="text"
+                      placeholder="Enter name..."
+                      value={searchName}
+                      onChange={(e) => setSearchName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300 font-medium text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-emerald-300 text-xs font-bold mb-2">
+                    Search Email
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <input
+                      type="text"
+                      placeholder="Enter email..."
+                      value={searchEmail}
+                      onChange={(e) => setSearchEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300 font-medium text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-emerald-300 text-xs font-bold mb-2">
+                    Search Phone
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <input
+                      type="text"
+                      placeholder="Enter phone..."
+                      value={searchPhone}
+                      onChange={(e) => setSearchPhone(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300 font-medium text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-emerald-300 text-xs font-bold mb-2">
+                    Search Institute
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <input
+                      type="text"
+                      placeholder="Enter institute..."
+                      value={searchInstitute}
+                      onChange={(e) => setSearchInstitute(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300 font-medium text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-emerald-300 text-xs font-bold mb-2">
+                    Filter by Course
+                  </label>
+                  <select
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300 font-medium text-sm"
                   >
-                    <td className="px-6 py-4 text-sm text-white/80 font-medium">
-                      <Calendar className="w-4 h-4 text-emerald-300 inline-block mr-2" />
-                      {formatDateSafely(client.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 text-white font-semibold">
-                      {client.name}
-                    </td>
-                    <td className="px-6 py-4 text-white/80">{client.email}</td>
-                    <td className="px-6 py-4 text-white/80">
-                      {client.whatsappNumber}
-                    </td>
-                    <td className="px-6 py-4 text-emerald-300 font-semibold">
-                      {client.q7_preferredDomain}{" "}
-                      {client.q7_subCourse ? `(${client.q7_subCourse})` : ""}
-                    </td>
-                    <td className="px-6 py-4 text-white/80">
-                      {client.city}, {client.state}
-                    </td>
-                    {/* ✅ FIXED: Bound to connectionStatus */}
-                    <td className="px-6 py-4">
-                      <select
-                        value={client.connectionStatus || "Not Connected"}
-                        onChange={(e) =>
-                          handleStatusChange(client._id, e.target.value)
-                        }
-                        disabled={updatingId === client._id}
-                        className={`px-3 py-2 rounded-lg text-sm border-2 focus:outline-none ${
-                          client.connectionStatus === "Connected"
-                            ? "bg-emerald-500/80 border-emerald-400 text-white"
-                            : "bg-red-500/80 border-red-400 text-white"
-                        }`}
+                    {uniqueCourses.map((c) => (
+                      <option
+                        key={c}
+                        value={c}
+                        className="bg-slate-900 text-white"
                       >
-                        <option value="Connected">Connected</option>
-                        <option value="Not Connected">Not Connected</option>
-                      </select>
-                      {updatingId === client._id && (
-                        <RefreshCw className="w-4 h-4 text-white animate-spin inline-block ml-2" />
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleView(client)}
-                        className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-medium shadow-lg hover:scale-105 transition-transform"
-                      >
-                        <Eye className="w-4 h-4" /> View
-                      </button>
-                    </td>
-                  </motion.tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="p-12 text-center text-white/60">
-                    No clients found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-sm text-white/60">
+                  Showing{" "}
+                  <span className="text-emerald-400 font-bold">
+                    {filteredClients.length}
+                  </span>{" "}
+                  of{" "}
+                  <span className="text-emerald-400 font-bold">
+                    {totalClients}
+                  </span>{" "}
+                  clients
+                </p>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600">
+                      <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          Date
+                        </div>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                        Phone
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                        Course
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                        Institute
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-white/10">
+                    {filteredClients.length > 0 ? (
+                      filteredClients.map((client) => (
+                        <motion.tr
+                          key={client._id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="hover:bg-white/5 transition-all duration-300"
+                        >
+                          <td className="px-6 py-4 text-sm text-white/80 font-medium">
+                            {formatDateSafely(client.createdAt)}
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-white">
+                            {client.name}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-white/80">
+                            {client.email}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-white/80">
+                            {client.whatsappNumber || "—"}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div>
+                              <div className="text-xs font-bold bg-emerald-600/30 text-emerald-300 px-2.5 py-1 rounded-full inline-block mb-1">
+                                {client.q7_preferredDomain}
+                              </div>
+                              <p className="text-sm text-white/80">
+                                → {client.q7_subCourse}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-white/80">
+                            {client.instituteName || "—"}
+                          </td>
+                          <td className="px-6 py-4">
+                            <select
+                              value={client.connectionStatus || "Not Connected"}
+                              onChange={(e) =>
+                                handleStatusChange(client._id, e.target.value)
+                              }
+                              disabled={updatingId === client._id}
+                              className={`px-3 py-2 rounded-lg font-semibold text-xs transition-all duration-300 ${
+                                client.connectionStatus === "Connected"
+                                  ? "bg-green-600/30 text-green-300 border-2 border-green-500/50"
+                                  : "bg-red-600/30 text-red-300 border-2 border-red-500/50"
+                              } ${
+                                updatingId === client._id
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : "cursor-pointer hover:scale-105"
+                              }`}
+                            >
+                              <option
+                                value="Connected"
+                                className="bg-slate-900"
+                              >
+                                Connected
+                              </option>
+                              <option
+                                value="Not Connected"
+                                className="bg-slate-900"
+                              >
+                                Not Connected
+                              </option>
+                            </select>
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() =>
+                                navigate(`/admin/client/${client._id}`, {
+                                  state: { client },
+                                })
+                              }
+                              className="group relative px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 overflow-hidden"
+                            >
+                              <span className="relative z-10 flex items-center gap-2">
+                                <Eye className="w-4 h-4" />
+                                View
+                              </span>
+                              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+                            </button>
+                          </td>
+                        </motion.tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={8} className="py-16 text-center">
+                          <div className="w-24 h-24 bg-emerald-100/20 rounded-full mx-auto mb-5 flex items-center justify-center">
+                            <Users className="w-12 h-12 text-white/40" />
+                          </div>
+                          <p className="text-xl font-semibold text-white/80">
+                            No clients found
+                          </p>
+                          <p className="text-sm text-white/60 mt-1">
+                            {hasActiveFilters
+                              ? "Try adjusting your filters"
+                              : "Start adding clients to see them here"}
+                          </p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <Box
+                  sx={{
+                    "& .MuiPagination-ul": {
+                      gap: "8px",
+                    },
+                    "& .MuiPaginationItem-root": {
+                      color: "rgba(255, 255, 255, 0.8)",
+                      fontWeight: 600,
+                      borderRadius: "12px",
+                      border: "2px solid rgba(255, 255, 255, 0.1)",
+                      backgroundColor: "rgba(255, 255, 255, 0.05)",
+                      backdropFilter: "blur(10px)",
+                      "&:hover": {
+                        backgroundColor: "rgba(16, 185, 129, 0.2)",
+                        borderColor: "rgba(16, 185, 129, 0.5)",
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "rgba(16, 185, 129, 0.6)",
+                        borderColor: "rgba(16, 185, 129, 1)",
+                        color: "#fff",
+                        fontWeight: 700,
+                        "&:hover": {
+                          backgroundColor: "rgba(16, 185, 129, 0.7)",
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={(e, v) => setPage(v)}
+                    size="large"
+                  />
+                </Box>
+              </div>
+            )}
+          </div>
         </div>
-      </motion.div>
-
-      {/* Pagination */}
-      {selectedCourse === "All" && totalPages > 1 && (
-        <Box display="flex" justifyContent="center" mt={6}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            size="large"
-            sx={{
-              "& .MuiPaginationItem-root": {
-                color: "white",
-                bgcolor: "rgba(255,255,255,0.1)",
-                border: "1px solid rgba(255,255,255,0.2)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                "&.Mui-selected": {
-                  background:
-                    "linear-gradient(135deg, #059669, #10b981) !important",
-                  color: "white",
-                  fontWeight: "bold",
-                },
-              },
-            }}
-          />
-        </Box>
-      )}
+      </div>
     </div>
   );
 };
 
 export default AdminClientTrack;
-
 
 // import React, { useEffect, useState } from "react";
 // import { motion } from "framer-motion";

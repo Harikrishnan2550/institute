@@ -479,37 +479,57 @@ export const updateCareerForm = async (req, res) => {
       return res.status(404).json({ message: "Form not found" });
     }
 
-    // ✅ Record admin updates (History)
-    const adminUpdate = {
-      date: new Date(),
-      adminStatus: updatedData.adminStatus || form.adminStatus || "",
-      adminRemarks: updatedData.adminRemarks ?? form.adminRemarks ?? "",
-      adminRemarks2: updatedData.adminRemarks2 ?? form.adminRemarks2 ?? "",
-      followUpDate: updatedData.followUpDate || form.followUpDate || null,
-    };
+    /* ================= STATUS LOGIC ================= */
 
-    form.adminUpdates.push(adminUpdate);
+    const isCustomStatus = updatedData.adminCustomStatus?.trim();
+    const isStandardStatus = updatedData.adminStatus?.trim();
 
-    // ✅ Store connectionStatus if provided
+    // 🔥 Rule: Only one status system active at a time
+    if (isCustomStatus) {
+      form.adminCustomStatus = updatedData.adminCustomStatus;
+      form.adminStatus = "Custom"; // marker only (not shown in UI)
+    } else if (isStandardStatus) {
+      form.adminStatus = updatedData.adminStatus;
+      form.adminCustomStatus = ""; // clear custom
+    }
+
+    /* ================= LEAD QUALITY ================= */
+
+    if (updatedData.leadQuality) {
+      form.leadQuality = updatedData.leadQuality;
+    }
+
+    /* ================= OTHER FIELDS ================= */
+
     if (updatedData.connectionStatus) {
       form.connectionStatus = updatedData.connectionStatus;
     }
 
-    // ✅ Update main admin fields
-    if (updatedData.adminStatus) {
-      form.adminStatus = updatedData.adminStatus;
-    }
     if (updatedData.adminRemarks !== undefined) {
       form.adminRemarks = updatedData.adminRemarks;
     }
+
     if (updatedData.adminRemarks2 !== undefined) {
       form.adminRemarks2 = updatedData.adminRemarks2;
     }
+
     if (updatedData.followUpDate !== undefined) {
       form.followUpDate = updatedData.followUpDate
         ? new Date(updatedData.followUpDate)
         : null;
     }
+
+    /* ================= HISTORY TRACKING ================= */
+
+    form.adminUpdates.push({
+      date: new Date(),
+      adminStatus: form.adminStatus,
+      adminCustomStatus: form.adminCustomStatus,
+      leadQuality: form.leadQuality,
+      adminRemarks: form.adminRemarks,
+      adminRemarks2: form.adminRemarks2,
+      followUpDate: form.followUpDate,
+    });
 
     await form.save();
 
@@ -518,11 +538,14 @@ export const updateCareerForm = async (req, res) => {
       message: "Admin update saved successfully",
       data: form,
     });
+
   } catch (error) {
     console.error("❌ Update Error:", error);
     res.status(500).json({ message: "Server Error", error });
   }
 };
+
+
 
 /* -----------------------------------------------
    🟢 Delete form

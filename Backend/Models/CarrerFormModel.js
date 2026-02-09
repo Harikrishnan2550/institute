@@ -73,8 +73,6 @@
 
 
 
-
-
 import mongoose from "mongoose";
 
 console.log("🧩 Loading CareerFormModel.js ...");
@@ -90,8 +88,8 @@ const careerFormSchema = new mongoose.Schema(
     q5_interestArea: { type: String },
     q6_jobAwareness: { type: String },
 
-    // ✅ Main + Subcourse (explicitly enforced)
-    q7_preferredDomain: { type: String, default: "" }, // merged value
+    // ✅ Course
+    q7_preferredDomain: { type: String, default: "" },
 
     q8_careerGoal: { type: String },
     q9_trainingTime: { type: String },
@@ -106,62 +104,64 @@ const careerFormSchema = new mongoose.Schema(
     city: { type: String },
     language: { type: String },
 
-    // ✅ Follow-up & Admin management
+    /* ================= ADMIN MANAGEMENT ================= */
+
     connectionStatus: {
       type: String,
       enum: ["Connected", "Not Connected"],
       default: "Not Connected",
     },
 
-    // NOTE: keep "not confirmed" in enum so old data is still valid
+    // 🎯 STANDARD PIPELINE STATUS
     adminStatus: {
       type: String,
-      enum: [
-        "not confirmed",
-        "New Lead",
-        "Contacted",
-        "Call Later",
-        "Whatsapp Follow Up",
-        "Phone Not Taken",
-        "Interested",
-        "Not Interested",
-        "Registered",
-        "Do Not Call Again",
-      ],
       default: "New Lead",
+    },
+
+    // 🟣 CUSTOM STATUS (NEW FIELD)
+    adminCustomStatus: {
+      type: String,
+      default: "",
+    },
+
+    // 🔥 Lead Quality
+    leadQuality: {
+      type: String,
+      enum: ["Hot", "Warm", "Cold"],
+      default: "Cold",
     },
 
     adminRemarks: String,
     adminRemarks2: String,
 
-    // This is the date admin wants to call the client again
     followUpDate: Date,
 
-    // History of admin updates
+    /* ================= HISTORY ================= */
     adminUpdates: [
       {
         date: { type: Date, default: Date.now },
         adminStatus: String,
+        adminCustomStatus: String, // 👈 SAVE CUSTOM STATUS HISTORY
+        leadQuality: String,
         adminRemarks: String,
         adminRemarks2: String,
         followUpDate: Date,
       },
     ],
 
-    // ✅ Extra fields
+    /* ================= EXTRA ================= */
     course: { type: String, default: "" },
     modeOfClass: { type: String, default: "" },
     paymentStatus: { type: String, default: "pending" },
     registrationStatus: { type: String, default: "pending" },
 
-    // ✅ Agent details
+    /* ================= AGENT ================= */
     agentId: { type: String, required: true },
     partnerName: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-// 🧹 Force reset of model cache (important!)
 delete mongoose.models.CareerForm;
 
 console.log("✅ CareerForm schema compiled successfully!");

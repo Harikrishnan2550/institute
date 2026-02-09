@@ -16,6 +16,7 @@ import dashboardRoutes from "./Routes/DashboardRoutes.js";
 import partnerRoutes from "./Routes/partnerRoutes.js";
 import clientStatusRoutes from "./Routes/clientStatusRoutes.js";
 import walletRoutes from "./Routes/walletRoutes.js";
+import courseRoutes from "./Routes/courseRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -112,6 +113,8 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/partners", partnerRoutes);
 app.use("/api/client-status", clientStatusRoutes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api/courses", courseRoutes);
+
 
 /* ---------------------------------------------
    🌍 Root + 404 + Errors
