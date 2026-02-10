@@ -70,7 +70,12 @@ app.use((req, res, next) => {
 /* ---------------------------------------------
    🔰 Security Middlewares
 --------------------------------------------- */
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, // 🔥 allow images across ports
+  })
+);
+
 app.use(cookieParser());
 
 const limiter = rateLimit({

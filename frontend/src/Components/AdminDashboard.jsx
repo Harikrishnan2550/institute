@@ -531,7 +531,7 @@ export default function AdminDashboard() {
     const filtered = partners.filter(
       (p) =>
         p.name?.toLowerCase().includes(query) ||
-        p.agentId?.toLowerCase().includes(query)
+        p.agentId?.toLowerCase().includes(query),
     );
     setFilteredPartners(filtered);
   }, [searchTerm, partners]);
@@ -544,13 +544,9 @@ export default function AdminDashboard() {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axiosInstance.put(
-        `/partners/${selectedPartner._id}`,
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axiosInstance.put(`/partners/${selectedPartner._id}`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       toast.success("Partner updated successfully");
       setSelectedPartner(null);
       setTimeout(() => window.location.reload(), 1500);
@@ -580,6 +576,17 @@ export default function AdminDashboard() {
     navigator.clipboard.writeText(link);
     toast.info("Referral link copied");
   };
+
+const getImageURL = (path) => {
+  if (!path) return null
+
+  // If backend already sent full URL, use it directly
+  if (path.startsWith("http")) return path
+
+  // Otherwise assume it's local upload path
+  return `${import.meta.env.VITE_API_BASE_URL.replace("/api","")}${path.startsWith("/") ? path : "/" + path}`
+}
+
 
   // Loading screen
   if (loading) {
@@ -693,13 +700,12 @@ export default function AdminDashboard() {
                       >
                         <td className="px-6 py-4">
                           {p.logo ? (
-                            <img
-                              src={`${import.meta.env.VITE_API_BASE_URL}${
-                                p.logo.startsWith("/") ? p.logo : "/" + p.logo
-                              }`}
-                              alt={p.name}
-                              className="w-12 h-12 rounded-xl object-cover border border-white/20"
-                            />
+                         <img
+  src={getImageURL(p.logo)}
+  alt={p.name}
+  className="w-12 h-12 rounded-xl object-cover border border-white/20"
+/>
+
                           ) : (
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
                               <User className="w-7 h-7 text-white" />
@@ -781,11 +787,7 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-5">
               {selectedPartner.logo ? (
                 <img
-                  src={`${import.meta.env.VITE_API_BASE_URL}${
-                    selectedPartner.logo.startsWith("/")
-                      ? selectedPartner.logo
-                      : "/" + selectedPartner.logo
-                  }`}
+  src={getImageURL(selectedPartner.logo)}
                   alt={selectedPartner.name}
                   className="w-20 h-20 rounded-2xl object-cover border-4 border-white"
                 />

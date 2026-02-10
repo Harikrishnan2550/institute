@@ -87,7 +87,7 @@
 //                 <span className="sm:hidden">👤</span>
 //               </button>
 //             )}
-            
+
 //             <div className="hidden sm:flex items-center gap-2 bg-white bg-opacity-10 px-3 sm:px-4 py-2 rounded-lg backdrop-blur-sm">
 //               <div className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-red-400' : 'bg-green-400'} animate-pulse`}></div>
 //               <span className="text-xs sm:text-sm font-medium">
@@ -136,7 +136,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("agentId");
-    localStorage.clear(); 
+    localStorage.clear();
 
     // 2. Show notification
     toast.success("Logged out successfully");
@@ -154,9 +154,12 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
         const decoded = JSON.parse(atob(token.split(".")[1]));
         if (decoded.role !== "partner") return;
 
-        const res = await axiosInstance.get(`/partners/agent/${decoded.agentId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axiosInstance.get(
+          `/partners/agent/${decoded.agentId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
 
         if (res.data) {
           setPartnerLogo(res.data.logo || null);
@@ -171,14 +174,20 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     if (isPartner) fetchPartnerLogo();
   }, [isPartner]);
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(
+    "/api",
+    "",
+  )?.replace(/\/$/, "");
 
   return (
     <nav className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white shadow-2xl sticky top-0 z-50 border-b border-emerald-500/20">
       {/* Animated background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-0 right-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+        <div
+          className="absolute top-0 right-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -190,14 +199,14 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
               <div className="relative group flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full blur-md opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
                 <img
-                  src={
-                    partnerLogo
-                      ? partnerLogo.startsWith("http")
-                        ? partnerLogo
-                        : `${BASE_URL}${partnerLogo.startsWith("/") ? partnerLogo : "/" + partnerLogo}`
-                      : "/logos/default-partner.png"
-                  }
-                  alt="Partner Logo"
+  src={
+    partnerLogo
+      ? partnerLogo.startsWith("http")
+        ? partnerLogo
+        : `${window.location.protocol}//${window.location.hostname}:4000${partnerLogo.startsWith("/") ? partnerLogo : "/" + partnerLogo}`
+      : "/logos/default-partner.png"
+  }
+  alt="Partner Logo"
                   className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-3 border-emerald-500 shadow-xl shadow-emerald-500/50 bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
                 />
               </div>
@@ -218,22 +227,33 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                 {isAdmin ? "Admin Dashboard" : `${partnerName}'s Dashboard`}
               </h1>
               <p className="text-xs sm:text-sm text-emerald-300/70 font-medium hidden sm:block">
-                {isAdmin ? "Manage everything from here" : "Welcome back, let's grow together"}
+                {isAdmin
+                  ? "Manage everything from here"
+                  : "Welcome back, let's grow together"}
               </p>
             </div>
           </div>
 
           {/* ---------- RIGHT SECTION: Hamburger (mobile), Account, Role Badge ---------- */}
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-
             {/* === HAMBURGER (mobile only, right side) === */}
             <button
               onClick={toggleSidebar}
               className="sm:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 transition-all duration-300 shadow-lg"
               aria-label="Toggle sidebar"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
 
@@ -276,7 +296,6 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                 {isAdmin ? "Admin Mode" : "Partner Mode"}
               </span>
             </div>
-
           </div>
         </div>
       </div>

@@ -94,13 +94,18 @@ export const updatePartner = async (req, res) => {
 ------------------------------------------ */
 export const updatePartnerByAgentId = async (req, res) => {
   try {
+    console.log("📦 BODY RECEIVED =>", req.body);
+    console.log("🖼 FILE RECEIVED =>", req.file);   // 🔥 THIS IS THE IMPORTANT ONE
+
     const { agentId } = req.params;
     const updates = req.body;
 
     if (req.file) {
-      // Normalize and ensure consistent URL path
       const cleanPath = `/uploads/${req.file.filename}`;
       updates.logo = cleanPath;
+      console.log("✅ SAVING LOGO PATH =>", cleanPath);
+    } else {
+      console.log("❌ NO FILE SENT FROM FRONTEND");
     }
 
     const updatedPartner = await UserModel.findOneAndUpdate(
@@ -110,9 +115,9 @@ export const updatePartnerByAgentId = async (req, res) => {
     );
 
     if (!updatedPartner)
-      return res
-        .status(404)
-        .json({ message: "Partner not found for given agent ID" });
+      return res.status(404).json({ message: "Partner not found for given agent ID" });
+
+    console.log("💾 UPDATED DOC =>", updatedPartner);
 
     res.json({
       message: "Partner updated successfully",
@@ -123,6 +128,7 @@ export const updatePartnerByAgentId = async (req, res) => {
     res.status(500).json({ message: "Failed to update partner", error });
   }
 };
+
 
 /* ------------------------------------------
    ✅ Delete partner (Admin only)

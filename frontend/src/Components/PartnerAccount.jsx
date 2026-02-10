@@ -372,7 +372,7 @@ export default function PartnerAccount() {
 
   const [logo, setLogo] = useState(null);
   const [preview, setPreview] = useState(
-    localStorage.getItem("partnerLogo") || null
+    localStorage.getItem("partnerLogo") || null,
   );
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -411,19 +411,20 @@ export default function PartnerAccount() {
 
         // ✅ Fetch Logo & Fix URL Logic
         const logoRes = await axiosInstance.get(
-          `/partners/public/logo/${agentId}`
+          `/partners/public/logo/${agentId}`,
         );
-        
+
         if (logoRes.data?.logo) {
           // 1. Replace backslashes (Windows path fix)
           let logoPath = logoRes.data.logo.replace(/\\/g, "/");
-          
-          // 2. Get Base URL without trailing slash
-          const baseURL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
 
-          // 3. Construct full URL
+         const baseURL =
+  import.meta.env.VITE_API_BASE_URL
+    ?.replace("/api", "")   // 🔥 THIS LINE WAS MISSING
+    ?.replace(/\/$/, "") || "";
+
+
           if (!logoPath.startsWith("http")) {
-            // Ensure path starts with /
             if (!logoPath.startsWith("/")) logoPath = `/${logoPath}`;
             setPreview(`${baseURL}${logoPath}`);
           } else {
@@ -433,8 +434,8 @@ export default function PartnerAccount() {
       } catch (error) {
         console.error("❌ Error fetching partner:", error);
         // Suppress error if just logo is missing to avoid UI clutter
-        if (!error.config?.url?.includes('logo')) {
-            toast.error("Failed to fetch partner details");
+        if (!error.config?.url?.includes("logo")) {
+          toast.error("Failed to fetch partner details");
         }
       } finally {
         setLoading(false);
@@ -467,7 +468,7 @@ export default function PartnerAccount() {
 
       const formDataToSend = new FormData();
       Object.keys(formData).forEach((key) =>
-        formDataToSend.append(key, formData[key])
+        formDataToSend.append(key, formData[key]),
       );
       if (logo) formDataToSend.append("logo", logo);
 
@@ -479,21 +480,22 @@ export default function PartnerAccount() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       // ✅ Update Preview immediately with robust logic
       if (res.data.data?.logo) {
         let logoPath = res.data.data.logo.replace(/\\/g, "/");
-        const baseURL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
-        
+        const baseURL =
+          import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
+
         if (!logoPath.startsWith("http")) {
-           if (!logoPath.startsWith("/")) logoPath = `/${logoPath}`;
-           setPreview(`${baseURL}${logoPath}`);
+          if (!logoPath.startsWith("/")) logoPath = `/${logoPath}`;
+          setPreview(`${baseURL}${logoPath}`);
         } else {
-           setPreview(logoPath);
+          setPreview(logoPath);
         }
-        
+
         // Update local storage if you use it
         localStorage.setItem("partnerLogo", logoPath);
       }
@@ -521,7 +523,7 @@ export default function PartnerAccount() {
           currentPassword: passwords.currentPassword,
           newPassword: passwords.newPassword,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       toast.success("Password updated successfully ✅");
@@ -604,11 +606,14 @@ export default function PartnerAccount() {
                     alt="Profile Logo"
                     className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-emerald-500 object-cover shadow-lg bg-white"
                     onError={(e) => {
-                         e.target.onerror = null; 
-                         // If full URL fails, assume it might be because of missing /uploads prefix in some cases
-                         if (!e.target.src.includes('uploads') && preview.split('/').pop()) {
-                             e.target.src = `${import.meta.env.VITE_API_BASE_URL}/uploads/${preview.split('/').pop()}`;
-                         }
+                      e.target.onerror = null;
+                      // If full URL fails, assume it might be because of missing /uploads prefix in some cases
+                      if (
+                        !e.target.src.includes("uploads") &&
+                        preview.split("/").pop()
+                      ) {
+                        e.target.src = `${import.meta.env.VITE_API_BASE_URL}/uploads/${preview.split("/").pop()}`;
+                      }
                     }}
                   />
                 ) : (
@@ -694,10 +699,10 @@ export default function PartnerAccount() {
                       {field === "accountNumber"
                         ? "Account Number"
                         : field === "accountHolderName"
-                        ? "Account Holder Name"
-                        : field === "ifscCode"
-                        ? "IFSC Code"
-                        : "Branch"}
+                          ? "Account Holder Name"
+                          : field === "ifscCode"
+                            ? "IFSC Code"
+                            : "Branch"}
                     </label>
                     <input
                       type="text"
