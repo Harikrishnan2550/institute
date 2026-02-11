@@ -174,10 +174,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     if (isPartner) fetchPartnerLogo();
   }, [isPartner]);
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(
-    "/api",
-    "",
-  )?.replace(/\/$/, "");
+const API_BASE = import.meta.env.VITE_API_BASE_URL.replace("/api", "");
 
   return (
     <nav className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white shadow-2xl sticky top-0 z-50 border-b border-emerald-500/20">
@@ -203,12 +200,13 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     partnerLogo
       ? partnerLogo.startsWith("http")
         ? partnerLogo
-        : `${window.location.protocol}//${window.location.hostname}:4000${partnerLogo.startsWith("/") ? partnerLogo : "/" + partnerLogo}`
+        : `${API_BASE}${partnerLogo.startsWith("/") ? partnerLogo : "/" + partnerLogo}`
       : "/logos/default-partner.png"
   }
   alt="Partner Logo"
-                  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-3 border-emerald-500 shadow-xl shadow-emerald-500/50 bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
-                />
+  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-3 border-emerald-500 shadow-xl shadow-emerald-500/50 bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
+/>
+
               </div>
             )}
 
