@@ -110,9 +110,6 @@
 
 // export default Navbar;
 
-
-
-
 // src/components/Navbar.jsx
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -145,51 +142,47 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     navigate("/");
   };
 
- useEffect(() => {
-  const fetchPartnerLogo = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+  useEffect(() => {
+    const fetchPartnerLogo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
-      const decoded = JSON.parse(atob(token.split(".")[1]));
-      if (decoded.role !== "partner") return;
+        const decoded = JSON.parse(atob(token.split(".")[1]));
+        if (decoded.role !== "partner") return;
 
-      // 🔹 1. Get partner name from main API
-      const partnerRes = await axiosInstance.get(
-        `/partners/agent/${decoded.agentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        // 🔹 1. Get partner name from main API
+        const partnerRes = await axiosInstance.get(
+          `/partners/agent/${decoded.agentId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
 
-      if (partnerRes.data?.name) {
-        setPartnerName(partnerRes.data.name);
+        if (partnerRes.data?.name) {
+          setPartnerName(partnerRes.data.name);
+        }
+
+        // 🔹 2. Get logo from PUBLIC logo endpoint (same as PartnerAccount)
+        const logoRes = await axiosInstance.get(
+          `/partners/public/logo/${decoded.agentId}`,
+        );
+
+        if (logoRes.data?.logo) {
+          const cleanPath = logoRes.data.logo.replace(/\\/g, "/");
+          setPartnerLogo(cleanPath);
+        }
+      } catch (error) {
+        console.error("Error fetching partner info:", error);
       }
+    };
 
-      // 🔹 2. Get logo from PUBLIC logo endpoint (same as PartnerAccount)
-      const logoRes = await axiosInstance.get(
-        `/partners/public/logo/${decoded.agentId}`
-      );
+    if (isPartner) fetchPartnerLogo();
+  }, [isPartner]);
 
-      if (logoRes.data?.logo) {
-        const cleanPath = logoRes.data.logo.replace(/\\/g, "/");
-        setPartnerLogo(cleanPath);
-      }
-
-    } catch (error) {
-      console.error("Error fetching partner info:", error);
-    }
-  };
-
-  if (isPartner) fetchPartnerLogo();
-}, [isPartner]);
-
-
-const RAW_BASE = import.meta.env.VITE_API_BASE_URL || "";
-const BASE_URL = RAW_BASE.replace("/api", "").replace(/\/$/, "");
-
+  const RAW_BASE = import.meta.env.VITE_API_BASE_URL || "";
+  const BASE_URL = RAW_BASE.replace("/api", "").replace(/\/$/, "");
 
   console.log("API_BASE:", import.meta.env.VITE_API_BASE_URL);
-console.log("Partner Logo from DB:", partnerLogo);
-
+  console.log("Partner Logo from DB:", partnerLogo);
 
   return (
     <nav className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white shadow-2xl sticky top-0 z-50 border-b border-emerald-500/20">
@@ -211,18 +204,16 @@ console.log("Partner Logo from DB:", partnerLogo);
               <div className="relative group flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full blur-md opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
                 <img
-  src={
-    partnerLogo
-      ? partnerLogo.startsWith("http")
-        ? partnerLogo
-        : `${BASE_URL}${partnerLogo.startsWith("/") ? "" : "/"}${partnerLogo}`
-      : "/logos/default-partner.png"
-  }
-  alt="Partner Logo"
-  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-3 border-emerald-500 shadow-xl shadow-emerald-500/50 bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
-/>
-
-
+                  src={
+                    partnerLogo
+                      ? partnerLogo.startsWith("http")
+                        ? partnerLogo
+                        : `${window.location.origin}${partnerLogo.startsWith("/") ? "" : "/"}${partnerLogo}`
+                      : "/logos/default-partner.png"
+                  }
+                  alt="Partner Logo"
+                  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-3 border-emerald-500 shadow-xl shadow-emerald-500/50 bg-white"
+                />
               </div>
             )}
 
