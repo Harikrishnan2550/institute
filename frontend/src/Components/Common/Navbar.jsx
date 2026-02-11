@@ -145,34 +145,43 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     navigate("/");
   };
 
-  useEffect(() => {
-    const fetchPartnerLogo = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+ useEffect(() => {
+  const fetchPartnerLogo = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        const decoded = JSON.parse(atob(token.split(".")[1]));
-        if (decoded.role !== "partner") return;
+      const decoded = JSON.parse(atob(token.split(".")[1]));
+      if (decoded.role !== "partner") return;
 
-        const res = await axiosInstance.get(
-          `/partners/agent/${decoded.agentId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+      // 🔹 1. Get partner name from main API
+      const partnerRes = await axiosInstance.get(
+        `/partners/agent/${decoded.agentId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-        if (res.data) {
-          setPartnerLogo(res.data.logo || null);
-          setPartnerName(res.data.name || "Partner");
-        }
-      } catch (error) {
-        console.error("Error fetching partner logo:", error);
-        // toast.error("Failed to load partner info");
+      if (partnerRes.data?.name) {
+        setPartnerName(partnerRes.data.name);
       }
-    };
 
-    if (isPartner) fetchPartnerLogo();
-  }, [isPartner]);
+      // 🔹 2. Get logo from PUBLIC logo endpoint (same as PartnerAccount)
+      const logoRes = await axiosInstance.get(
+        `/partners/public/logo/${decoded.agentId}`
+      );
+
+      if (logoRes.data?.logo) {
+        const cleanPath = logoRes.data.logo.replace(/\\/g, "/");
+        setPartnerLogo(cleanPath);
+      }
+
+    } catch (error) {
+      console.error("Error fetching partner info:", error);
+    }
+  };
+
+  if (isPartner) fetchPartnerLogo();
+}, [isPartner]);
+
 
 const RAW_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const BASE_URL = RAW_BASE.replace("/api", "").replace(/\/$/, "");
