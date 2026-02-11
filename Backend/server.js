@@ -83,7 +83,7 @@ const limiter = rateLimit({
   max: 200,
   message: "Too many requests. Please try again later.",
 });
-
+app.use(limiter);
 
 /* ---------------------------------------------
    📦 Request Body & Static
