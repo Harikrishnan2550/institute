@@ -174,7 +174,14 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     if (isPartner) fetchPartnerLogo();
   }, [isPartner]);
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL.replace("/api", "");
+const RAW_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE = RAW_BASE.replace("/api", "").replace(/\/$/, "");
+
+const logoUrl = partnerLogo
+  ? partnerLogo.startsWith("http")
+    ? partnerLogo
+    : `${API_BASE}${partnerLogo.startsWith("/") ? "" : "/"}${partnerLogo}`
+  : "/logos/default-partner.png";
 
   return (
     <nav className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white shadow-2xl sticky top-0 z-50 border-b border-emerald-500/20">
@@ -196,13 +203,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL.replace("/api", "");
               <div className="relative group flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full blur-md opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
                 <img
-  src={
-    partnerLogo
-      ? partnerLogo.startsWith("http")
-        ? partnerLogo
-        : `${API_BASE}${partnerLogo.startsWith("/") ? partnerLogo : "/" + partnerLogo}`
-      : "/logos/default-partner.png"
-  }
+  src={logoUrl}
   alt="Partner Logo"
   className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-3 border-emerald-500 shadow-xl shadow-emerald-500/50 bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
 />
