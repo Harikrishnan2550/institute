@@ -183,6 +183,10 @@ const logoUrl = partnerLogo
     : `${API_BASE}${partnerLogo.startsWith("/") ? "" : "/"}${partnerLogo}`
   : "/logos/default-partner.png";
 
+  console.log("API_BASE:", import.meta.env.VITE_API_BASE_URL);
+console.log("Partner Logo from DB:", partnerLogo);
+
+
   return (
     <nav className="relative bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white shadow-2xl sticky top-0 z-50 border-b border-emerald-500/20">
       {/* Animated background glow */}
