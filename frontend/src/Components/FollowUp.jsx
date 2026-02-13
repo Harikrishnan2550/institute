@@ -360,7 +360,7 @@ export default function FollowUp() {
                   </div>
 
                   {/* Cards */}
-                  <div className="p-4 space-y-3 max-h-[calc(100vh-500px)] overflow-y-auto custom-scrollbar">
+                  <div className="p-4 space-y-3">
                     {grouped[status].map((c, index) => (
                       <div
                         key={c._id || index}

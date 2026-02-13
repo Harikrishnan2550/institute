@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../api/axios";
 import { toast } from "react-toastify";
+import { BookOpen, Users, ArrowLeft } from "lucide-react";
+
 
 export default function AdminCourses() {
   const [tab, setTab] = useState("courses");
@@ -134,7 +136,7 @@ export default function AdminCourses() {
               <div className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-xl border border-white/10 p-6 hover:border-emerald-500/30 transition-all duration-300">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-emerald-600 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <span className="text-2xl">📚</span>
+                    <BookOpen className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <p className="text-white/60 text-sm font-medium">Total Categories</p>
@@ -146,7 +148,7 @@ export default function AdminCourses() {
               <div className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-xl border border-white/10 p-6 hover:border-green-500/30 transition-all duration-300">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-green-600 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <span className="text-2xl">👥</span>
+                    <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <p className="text-white/60 text-sm font-medium">Active Agents</p>
@@ -171,7 +173,11 @@ export default function AdminCourses() {
                     : "text-white/60 hover:text-white hover:bg-white/5"
                 }`}
               >
-                📚 Categories
+               <div className="flex items-center justify-center gap-2">
+  <BookOpen className="w-4 h-4" />
+  Categories
+</div>
+
               </button>
               <button
                 onClick={() => {
@@ -186,7 +192,11 @@ export default function AdminCourses() {
                     : "text-white/60 hover:text-white hover:bg-white/5"
                 }`}
               >
-                👥 Agents
+                <div className="flex items-center justify-center gap-2">
+  <Users className="w-4 h-4" />
+  Agents
+</div>
+
               </button>
             </div>
 
@@ -354,7 +364,7 @@ export default function AdminCourses() {
                       ) : (
                         <div className="text-center py-16">
                           <div className="w-20 h-20 bg-emerald-100/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                            <span className="text-4xl">👥</span>
+                            <Users className="w-6 h-6 text-white" />
                           </div>
                           <p className="text-white/60 font-medium">No agents found</p>
                         </div>
@@ -368,7 +378,7 @@ export default function AdminCourses() {
                         Courses by Agent
                       </h2>
                       <p className="text-emerald-300 text-sm font-medium mt-1">
-                        {selectedAgent.name} ({selectedAgent.id})
+                        {selectedAgent.name}
                       </p>
                     </div>
 
@@ -413,7 +423,7 @@ export default function AdminCourses() {
                       ) : (
                         <div className="text-center py-16">
                           <div className="w-20 h-20 bg-emerald-100/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                            <span className="text-4xl">📚</span>
+                            <BookOpen className="w-6 h-6 text-white" />
                           </div>
                           <p className="text-white/60 font-medium">No courses found</p>
                         </div>
@@ -424,7 +434,7 @@ export default function AdminCourses() {
                   <div className="flex items-center justify-center h-[640px]">
                     <div className="text-center px-6">
                       <div className="w-24 h-24 bg-emerald-100/20 rounded-full mx-auto mb-6 flex items-center justify-center">
-                        <span className="text-5xl">👈</span>
+                        <ArrowLeft className="w-10 h-10 text-emerald-400" />
                       </div>
                       <p className="text-xl font-semibold text-white/80 mb-2">
                         Select an item

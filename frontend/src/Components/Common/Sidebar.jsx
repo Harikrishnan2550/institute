@@ -158,7 +158,7 @@ import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 // Icons
 import { MdDashboard } from "react-icons/md";
-import { FaUserFriends, FaWallet } from "react-icons/fa";
+import { FaUserFriends, FaWallet, FaBookOpen } from "react-icons/fa";
 import { AiOutlineBarChart } from "react-icons/ai";
 import { FiMenu, FiX } from "react-icons/fi";
 import { RiCustomerService2Fill } from "react-icons/ri"; 
@@ -176,14 +176,15 @@ const menuItems = [
   { title: "Dashboard", icon: <MdDashboard />, path: "dashboard" },
 
   // 👤 Partner Course Management
-  ...(!isAdmin
-    ? [{ title: "Courses", icon: <AiOutlineBarChart />, path: "courses" }]
-    : []),
+...(!isAdmin
+  ? [{ title: "Courses", icon: <FaBookOpen />, path: "courses" }]
+  : []),
 
-  // 🧑‍💼 Admin Course Analytics
-  ...(isAdmin
-    ? [{ title: "Courses", icon: <AiOutlineBarChart />, path: "courses" }]
-    : []),
+// 🧑‍💼 Admin Course Analytics
+...(isAdmin
+  ? [{ title: "Courses", icon: <FaBookOpen />, path: "courses" }]
+  : []),
+
 
   { title: "Students Info", icon: <FaUserFriends />, path: "client-track" },
   { title: "Students Status", icon: <AiOutlineBarChart />, path: "client-status" },
